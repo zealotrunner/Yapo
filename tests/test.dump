@@ -1,0 +1,52 @@
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE "article" (
+  "id" int(11) NOT NULL AUTO_INCREMENT,
+  "title" varchar(128) NOT NULL,
+  "content" text NOT NULL,
+  "addtime" int(11) NOT NULL,
+  PRIMARY KEY ("id")
+);
+/*!40101 SET character_set_client = @saved_cs_client */;
+INSERT INTO "article" VALUES (1,'the title 1','the content 1',1366790805);
+INSERT INTO "article" VALUES (2,'the title 2','the content 2',1366790805);
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE "company" (
+  "id" int(10) NOT NULL AUTO_INCREMENT,
+  "name" varchar(200) NOT NULL,
+  "ceo" int(10) NOT NULL,
+  "nasdaq_symbol" varchar(4) NOT NULL,
+  "founded" int(10) NOT NULL,
+  PRIMARY KEY ("id")
+);
+/*!40101 SET character_set_client = @saved_cs_client */;
+INSERT INTO "company" VALUES (10,'Apple',20,'AAPL',1976);
+INSERT INTO "company" VALUES (11,'Google',22,'GOOG',1998);
+INSERT INTO "company" VALUES (12,'Microsoft',23,'MSFT',1975);
+INSERT INTO "company" VALUES (13,'Facebook',24,'FB',2004);
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE "company_detail" (
+  "id" int(11) NOT NULL AUTO_INCREMENT,
+  "description" varchar(3000) NOT NULL,
+  PRIMARY KEY ("id")
+);
+/*!40101 SET character_set_client = @saved_cs_client */;
+INSERT INTO "company_detail" VALUES (10,'Apple Inc., formerly Apple Computer, Inc., is an American multinational corporation headquartered in Cupertino, California that designs, develops, and sells consumer electronics, computer software and personal computers.');
+INSERT INTO "company_detail" VALUES (11,'Google Inc. is an American multinational corporation specializing in Internet-related services and products. These include search, cloud computing, software and online advertising technologies. Most of its profits are derived from AdWords.');
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE "employee" (
+  "id" int(10) NOT NULL AUTO_INCREMENT,
+  "name" varchar(50) NOT NULL,
+  "sex" tinyint(3) NOT NULL,
+  "company_id" int(10) NOT NULL,
+  PRIMARY KEY ("id")
+);
+/*!40101 SET character_set_client = @saved_cs_client */;
+INSERT INTO "employee" VALUES (20,'Steve Jobs',1,10);
+INSERT INTO "employee" VALUES (21,'Steve Wozniak',1,10);
+INSERT INTO "employee" VALUES (22,'Larry Page',1,11);
+INSERT INTO "employee" VALUES (23,'Steve Ballmer',1,12);
+INSERT INTO "employee" VALUES (24,'Mark Zuckerberg',1,13);
