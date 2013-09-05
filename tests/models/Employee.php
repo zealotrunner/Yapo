@@ -1,6 +1,4 @@
 <?php
-require_once(dirname(__FILE__) . '../../../src/Yapo.php');
-require_once(dirname(__FILE__) . '../../../src/YapoTable.php');
 
 class Employee extends Yapo\Yapo {
 

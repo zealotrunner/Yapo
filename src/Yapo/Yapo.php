@@ -2,17 +2,7 @@
 
 namespace Yapo;
 
-$base = dirname(__FILE__);
-
-require $base . '/YapoBundle.php';
-require $base . '/YapoConfig.php';
-require $base . '/YapoEnum.php';
-require $base . '/YapoField.php';
-require $base . '/YapoFieldDefiner.php';
-require $base . '/YapoFieldQuerier.php';
-require $base . '/YapoInterfaceTable.php';
-require $base . '/YapoLazyList.php';
-require $base . '/YapoUtil.php';
+require_once(dirname(__FILE__) . '/YapoUtil.php');
 
 /**
  * Yapo

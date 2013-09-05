@@ -1,6 +1,8 @@
 <?php
 
+require 'vendor/autoload.php';
 error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE & ~E_STRICT);
+
 
 define('DEBUG_MODE', false);
 define('TEST_DSN', 'sqlite:' . __DIR__ .'/test.sqlite');
