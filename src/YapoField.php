@@ -65,6 +65,8 @@ class YapoField {
     }
 
     public function modifications($id, $value) {
+        if ($this->enum && !in_array($value, array_keys($this->enum))) return array('', array(), array());
+
         if ($this->of) {
             $table = $this->of;
             if ($this->with) {

@@ -13,8 +13,6 @@ Yet Another PHP ORM
             $_('is_public')->eq(true)       // AND `is_pubilc` = 1 )
         )->or(
             $_('employees')->gt('10000')    // OR ( `employees` > 10000 )
-        )->order_by(
-            $_('founded')->desc()           // ORDER BY `founded` DESC
         );
 
         foreach ($companies as $company) {

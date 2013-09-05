@@ -166,7 +166,8 @@ class YapoTest extends PHPUnit_Framework_TestCase {
             'name' => 'Yapo',
             'ceo' => 0,
             'symbol' => 'YAPO',
-            'founded' => 2013
+            'founded' => 2013,
+            'description' => 'Yapo Inc.'
         ));
         $inserted_id = $yapo_company->save();
         $this->assertTrue($inserted_id > 0);
@@ -177,12 +178,14 @@ class YapoTest extends PHPUnit_Framework_TestCase {
                 $yapo_company->ceo,
                 $yapo_company->symbol,
                 $yapo_company->founded,
+                $yapo_company->description,
             ), array(
                 $inserted_id,
                 'Yapo',
                 null,
                 'YAPO',
                 2013,
+                'Yapo Inc.'
             )
         );
 
@@ -190,9 +193,26 @@ class YapoTest extends PHPUnit_Framework_TestCase {
         $yapo_company = null;
         $yapo_company = Company::get($inserted_id);
         $this->assertEquals($yapo_company->id, $inserted_id);
+        $this->assertEquals(
+            array(
+                $yapo_company->id,
+                $yapo_company->name,
+                $yapo_company->ceo,
+                $yapo_company->symbol,
+                $yapo_company->founded,
+                $yapo_company->description,
+            ), array(
+                $inserted_id,
+                'Yapo',
+                null,
+                'YAPO',
+                2013,
+                'Yapo Inc.'
+            )
+        );
 
         // modify some fields
-        $new_description = 'Apple Inc., formerly Apple Computer, Inc.';
+        $new_description = 'Yapo Inc., formerly Yapo Computer, Inc.';
         $yapo_company->founded = 2012;
         $yapo_company->description = $new_description;
         $succeed = $yapo_company->save();
@@ -217,6 +237,11 @@ class YapoTest extends PHPUnit_Framework_TestCase {
             array_map(function($e) {return $e->name;}, $apple->employees->getArrayCopy()),
             array(0 => 'Steve Jobs', 1 => 'Steve Wozniak')
         );
+
+        // can't set wrong enum value
+        $apple->ceo->sex = -1; // not take effect
+        $apple->ceo->save();
+        $this->assertEquals($apple->ceo->sex->text(), 'Male');
 
         // can't set id
         $apple->id = 3223;

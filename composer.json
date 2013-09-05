@@ -1,9 +1,10 @@
 {
     "name": "yapo/yapo",
-    "keywords": ["orm"],
     "description": "",
-    "homepage": "",
+    "version": "0.0.1",
     "type": "library",
+    "homepage": "",
+    "keywords": ["orm"],
     "license": "MIT",
     "authors": [
       {

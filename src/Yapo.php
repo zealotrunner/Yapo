@@ -220,6 +220,8 @@ abstract class Yapo {
         $modifications = self::_modifications($this->id, $this->dirty_data);
 
         foreach ($modifications as $table_name => $m) {
+            if (!$table_name) continue;
+            
             $w = $m['where'];
             $m = $m['modification'];
             $table = $table_name::instance();
@@ -285,6 +287,9 @@ abstract class Yapo {
         if ($result) {
             // clear memory cache after removing
             self::$gets[self::_class()] = array();
+
+            // todo
+            // remove extend tables
 
             // todo
             // set $this to null? possible???
