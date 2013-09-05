@@ -300,7 +300,8 @@ abstract class Yapo {
         if ($field_name) {
             // {YapoModel}::_('field_name');
 
-            $field = array_shift(static::_fields($field_name));
+            $fields = static::_fields($field_name); // 5.4 Only variables should be passed by reference 
+            $field = array_shift($fields);
             return $field ? $field->querier() : null;
         } else {
             // $_ = {YapoModel}::_();
