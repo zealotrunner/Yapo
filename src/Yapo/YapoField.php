@@ -69,20 +69,45 @@ class YapoField {
 
         if ($this->of) {
             $table = $this->of;
-            if ($this->with) {
-                $where = array($this->with => $id);
+
+            // $modification = array_merge($where, array($this->as => $value));
+
+            if ($id) {
+                if ($this->with) {
+                    $where = array($this->with => $id);
+                } else {
+                    $where = array($this->using => $id);
+                }
+
+                $modification = array($this->as => $value);
             } else {
-                $where = array($this->using => $id);
+                $id = 'LAST_INSERT_ID';
+                $where = array();
+
+                if ($this->with) {
+                    $id_modification = array($this->with => $id);
+                } else {
+                    $id_modification = array($this->using => $id);
+                }
+
+                $modification = array_merge($id_modification, array($this->as => $value));
             }
-            $modification = array_merge($where, array($this->as => $value));
+
         } else {
             $namespace = $this->namespace;
             $table = $namespace::table();
-            $where = $id;
+
+            if ($id) {
+                $where = array($table::instance()->pk() => $id);
+            } else {
+                $where = array();
+            }
+
             $modification = $this->writer
                 ? call_user_func_array($this->writer, array(array(), $value))
                 : array($this->as => $value);
         }
+
 
         return array($table, $where, $modification);
     }
@@ -130,7 +155,7 @@ class YapoField {
                                 }, $rows);
                             return $other_xtable::get($ids);
                         });
-                        $value = $values[$row[$using]];
+                        $value = empty($values[$row[$using]]) ? '' : $values[$row[$using]];
                     } else {
                         $value = $other_xtable::get($row[$using]);
                     }
@@ -182,12 +207,14 @@ class YapoField {
 
         // filter the result
         if (is_callable($this->as)) {
-            $value = call_user_func($this->as, $value);
+            if ($value) {
+                $value = call_user_func($this->as, $value);
+            }
         } else if (preg_match('/^[A-Z].*(_[A-Z])*/', $this->as)) {
             // pass
         } else {
             if (is_assoc($value)) {
-                $value = $value[$this->as];
+                $value = empty($value[$this->as]) ? 0 : $value[$this->as];
             } else {
                 $as = $this->as;
                 $value = array_map(function($v) use ($as) {
@@ -205,7 +232,6 @@ class YapoField {
 
         return $value;
     }
-
 
     public static function defined($namespace) {
         return static::$namespaces[$namespace];

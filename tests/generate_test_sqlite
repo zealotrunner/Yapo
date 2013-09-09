@@ -13,14 +13,14 @@
 
 ## mysqldump  --compatible=ansi --skip-extended-insert --compact  "$@" | \
 
-if [ -f "test.sqlite" ]
+if [ -f "./tests/test.sqlite" ]
 then
-	rm test.sqlite
+	rm ./tests/test.sqlite
 fi
 
-if [ -f "test.dump" ]
+if [ -f "./tests/test.dump" ]
 then
-	cat test.dump | \
+	cat ./tests/test.dump | \
 
 	awk '
 
@@ -107,7 +107,7 @@ then
 		print "END TRANSACTION;"
 	}
 	' \
-	| sqlite3 test.sqlite
+	| sqlite3 ./tests/test.sqlite
 fi
 
 # exit 0

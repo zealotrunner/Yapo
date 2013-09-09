@@ -28,8 +28,9 @@ abstract class YapoTable implements YapoInterfaceTable {
     public function pk() { return self::$configs->pk;}
 
     // todo bind params
-    public function insert($column, $value) {
+    public function insert($column, $value, $on_duplicate = '') {
         $sql = "INSERT INTO {$this->table()} ($column) VALUES ($value)";
+        if ($on_duplicate) $sql .= " ON DUPLICATE KEY UPDATE $on_duplicate";
         $stmt = $this->pdo->prepare($sql);
         debug($sql);
         $stmt->execute();

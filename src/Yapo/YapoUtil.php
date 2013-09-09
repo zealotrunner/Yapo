@@ -3,7 +3,7 @@
 namespace Yapo;
 
 function debug($var) {
-    if (!DEBUG_MODE) return;
+    if (!defined("DEBUG_MODE")) return;
 
     $is_cli = php_sapi_name() == 'cli' || empty($_SERVER['REMOTE_ADDR']);
     $prefix = $is_cli ? "" : '<pre>';

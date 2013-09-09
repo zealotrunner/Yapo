@@ -37,7 +37,7 @@ class YapoFieldDefiner {
         $this->using = $using;
 
         $this->writer = function($row, $value) use ($using) {
-            $row[$using] = $value->id ? $value->id : 0;
+            $row[$using] = empty($value->id) ? 0 : $value->id;
             return $row;
         };
         return $this;

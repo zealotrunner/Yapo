@@ -65,6 +65,10 @@ abstract class Yapo {
         }
     }
 
+    public function __isset($name) {
+        return $this->data[$name] ? true : fales;
+    }
+
     /**
      * implements unset($object->field)
      */
@@ -83,56 +87,22 @@ abstract class Yapo {
 
         // memory cache
         $key = md5(serialize($id_or_ids));
-        if (self::$gets[$self_class][$key]) return self::$gets[$self_class][$key];
+        if (!empty(self::$gets[$self_class][$key])) return self::$gets[$self_class][$key];
 
         if (is_array($id_or_ids)) {
             // query by ids
             $result = static::_modelize_and_fill_up($id_or_ids);
         } else {
             // query by id
-            list($filled_up) = array_values(static::_modelize_and_fill_up(array($id_or_ids)));
+            list($filled_up) = (array_values(static::_modelize_and_fill_up(array($id_or_ids))) ?: array(0));
 
-            $result = $filled_up->id ? $filled_up : null;
+            $result = empty($filled_up->id) ? null : $filled_up;
         }
 
         self::$gets[$self_class][$key] = $result;
 
         return $result;
     }
-
-    private static function _modelize_and_fill_up($ids) {
-        // create models, these models are in the same "bundle"
-        $bundle = new YapoBundle();
-        $modelizeds = array();
-        foreach ($ids as $id) {
-            $modelized = static::_modelize($id, $bundle);
-            $modelizeds[] = $modelized;
-        }
-
-        // fill up the models after created
-        $filled_ups = array();
-        foreach ($modelizeds as $modelized) {
-            $filled_up = $modelized->_fill_up();
-            if (!$filled_up->id) continue;
-
-            $filled_ups[$filled_up->id] = $filled_up;
-        }
-
-        return $filled_ups;
-    }
-
-    private static function _modelize($id, $bundle = null) {
-        $object = static::_wrap(array('id' => $id));
-
-        if ($bundle) {
-            $object->siblings = $bundle;
-        }
-
-        $object->siblings->add($object);
-
-        return $object;
-    }
-
     /**
      * the query method, filter by conditions
      * ::filter(
@@ -203,48 +173,42 @@ abstract class Yapo {
      */
     public function save() {
         // TODO fix bug + refine
-
         $result = false;
 
         // analyze the dirty_data, get the modications
         $modifications = self::_modifications($this->id, $this->dirty_data);
 
+        $last_insert_id = 0;
+
         foreach ($modifications as $table_name => $m) {
             if (!$table_name) continue;
-            
+
             $w = $m['where'];
             $m = $m['modification'];
+            foreach ($m as $k => $v) {
+                if ($v == 'LAST_INSERT_ID') $m[$k] = $last_insert_id;
+            }
+
             $table = $table_name::instance();
 
             // TODO ugly
             // replace into? or  http://stackoverflow.com/questions/2930378/mysql-replace-into-alternative
             $exists = $w
-                ? (is_array($w)
-                    ? $table->select('*', implode(' AND ', array_map(function($f, $n) {
-                            return "`$f` = '$n'";
-                        }, array_keys($w), array_values($w))), 'id desc', 0, 10000)
-                    : $table->select('*', "`{$table->pk()}` = $w", 'id desc', 0, 10000))
+                ? $table->select('*', implode(' AND ', array_map(function($f, $n) {
+                        return "`$f` = '$n'";
+                    }, array_keys($w), array_values($w))), 'id desc', 0, 10000)
                 : false;
 
-            if ($exists && $w) {
+            if ($exists) {
                 // update
-                if (is_array($w)) {
-                    $result = $table->update(
-                        implode(', ', array_map(function($f, $n) {
-                            return "`$f` = '$n'";
-                        }, array_keys($m), array_values($m))),
-                        implode(' AND ', array_map(function($f, $n) {
-                            return "`$f` = '$n'";
-                        }, array_keys($w), array_values($w)))
-                    );
-                } else {
-                    $result = $table->update(
-                        implode(', ', array_map(function($f, $n) {
-                            return "`$f` = '$n'";
-                        }, array_keys($m), array_values($m))),
-                        "{$table->pk()} = $w"
-                    );
-                }
+                $result = $table->update(
+                    implode(', ', array_map(function($f, $n) {
+                        return "`$f` = '$n'";
+                    }, array_keys($m), array_values($m))),
+                    implode(' AND ', array_map(function($f, $n) {
+                        return "`$f` = '$n'";
+                    }, array_keys($w), array_values($w)))
+                );
             } else {
                 // new
                 $result = $table->insert(
@@ -255,6 +219,8 @@ abstract class Yapo {
                     // fill inserted id
                     $this->data['id'] = $result;
                 }
+
+                $last_insert_id = $result;
             }
         }
 
@@ -308,17 +274,51 @@ abstract class Yapo {
         }
     }
 
-    public static function _table() {
+    private static function _modelize_and_fill_up($ids) {
+        // create models, these models are in the same "bundle"
+        $bundle = new YapoBundle();
+        $modelizeds = array();
+        foreach ($ids as $id) {
+            $modelized = static::_modelize($id, $bundle);
+            $modelizeds[] = $modelized;
+        }
+
+        // fill up the models after created
+        $filled_ups = array();
+        foreach ($modelizeds as $modelized) {
+            $filled_up = $modelized->_fill_up();
+            if (!$filled_up->id) continue;
+
+            $filled_ups[$filled_up->id] = $filled_up;
+        }
+
+        return $filled_ups;
+    }
+
+    private static function _modelize($id, $bundle = null) {
+        $object = static::_wrap(array('id' => $id));
+
+        if ($bundle) {
+            $object->siblings = $bundle;
+        }
+
+        $object->siblings->add($object);
+
+        return $object;
+    }
+
+
+    private static function _table() {
         $class = static::_class();
         $table = $class::table();
         return $table::instance();
     }
 
-    public static function _fields($field_name = '') {
+    private static function _fields($field_name = '') {
         static $fields = array();
         $class = static::_class();
 
-        if (!$fields[$class]) {
+        if (empty($fields[$class])) {
             // subclasses will define the fields
             $class::define_fields(function($field) use ($class) {
                 return YapoField::define($field, $class);
@@ -331,7 +331,13 @@ abstract class Yapo {
             $fields[$class] = YapoField::defined($class);
         }
 
-        return $field_name ? array($fields[$class][$field_name]) : $fields[$class];
+        return $field_name
+            ? (
+                empty($fields[$class][$field_name])
+                ? array(null)
+                : array($fields[$class][$field_name])
+              )
+            : $fields[$class];
     }
 
     private static function _wrap($data) {
@@ -469,7 +475,7 @@ abstract class Yapo {
         $siblings = $this->siblings->get();
 
         // TODO refine
-        if (!$siblings[0]->row) {
+        if (empty($siblings[0]->row)) {
             $table = self::_table();
 
             $rows = every(30, $siblings, function($ss) use ($table) {
@@ -480,7 +486,15 @@ abstract class Yapo {
         }
 
         foreach ($siblings as $s) {
-            $row = $s->row ? $s->row : $rows[$s->id];
+            // todo ??
+
+            $row = $s->row 
+                ?: (
+                    empty($rows[$s->id])
+                    ? ''
+                    : $rows[$s->id]
+                  );
+
             if ($row) {
                 $s->row = $row;
             } else {
@@ -512,7 +526,7 @@ abstract class Yapo {
         $this->row = array();
     }
 
-    abstract public static function table();
+    /*abstract*/ public static function table() {}
 
-    abstract protected static function define_fields($define_function);
+    /*abstract*/ protected static function define_fields($define_function) {}
 }
