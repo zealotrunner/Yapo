@@ -22,7 +22,7 @@ class Employee extends Yapo\Yapo {
 
 }
 
-class EmployeeTable extends Yapo\YapoTable {
+class EmployeeTable extends Yapo\YapoCachedTable {
 
     public static function master() {
         return new Yapo\YapoConfig(

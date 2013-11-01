@@ -9,11 +9,9 @@ class YapoLazyList extends \ArrayObject {
     private $loaded = false;
 
     private $conditions = array();
-    private $order = array();
+    private $orders = array();
     private $page = 1;
     private $page_size = 500;
-
-    private static $caches = array();
 
     public function __construct($table) {
         parent::__construct();
@@ -23,10 +21,11 @@ class YapoLazyList extends \ArrayObject {
 
     public function filter($conditions = array()) {return $this->aand($conditions);}
     public function aand($conditions = array()) {
-        $conditions = array_map(function($c) {
-            return $c->sql();
-        }, $conditions);
-        $this->conditions = $this->_combine($this->conditions, $conditions, 'AND');
+        $this->conditions = $this->_combine(
+            $this->conditions,
+            array_map(function($c) { return $c->sql();}, $conditions),
+            'AND'
+        );
 
         if (!$this->conditions) {
             $this->conditions = array('1 = 0');
@@ -37,10 +36,11 @@ class YapoLazyList extends \ArrayObject {
     }
 
     public function oor($conditions = array()) {
-        $conditions = array_map(function($c) {
-            return $c->sql();
-        }, $conditions);
-        $this->conditions = $this->_combine($this->conditions, $conditions, 'OR');
+        $this->conditions = $this->_combine(
+            $this->conditions,
+            array_map(function($c) { return $c->sql();}, $conditions),
+            'OR'
+        );
 
         $this->loaded = false;
         return $this;
@@ -48,9 +48,9 @@ class YapoLazyList extends \ArrayObject {
 
     public function order_by($order_or_orders) {
         if (is_array($order_or_orders)) {
-            $this->order = array_merge($this->order, $order_or_orders);
+            $this->orders = array_merge($this->orders, $order_or_orders);
         } else {
-            $this->order[] = $order_or_orders;
+            $this->orders[] = $order_or_orders;
         }
 
         $this->loaded = false;
@@ -101,7 +101,7 @@ class YapoLazyList extends \ArrayObject {
      * @override ArrayObject
      */
     public function offsetSet($offset, $value) {
-        // readonly
+        // LazyLists are readonly
         return null;
     }
 
@@ -131,17 +131,14 @@ class YapoLazyList extends \ArrayObject {
     private function _load() {
         if ($this->loaded) return;
 
-        $key = md5(serialize($this->conditions) . serialize($this->order) . $this->page . $this->page_size);
         $table = $this->table;
 
         $result = $table::_find(
             $this->conditions,
-            $this->order,
+            $this->orders,
             $this->page,
             $this->page_size
         );
-
-        self::$caches[$table][$key] = $result;
 
         $this->loaded = true;
         $this->exchangeArray($result);

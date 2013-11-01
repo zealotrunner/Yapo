@@ -15,7 +15,7 @@ abstract class Yapo {
     private $data = array();
 
     /**
-     * Updating data
+     * updating data
      */
     private $dirty_data = array();
 
@@ -29,12 +29,7 @@ abstract class Yapo {
      */
     private $siblings = null;
 
-    /*
-     * cached by pk
-     */
-    private static $gets = array();
-
-    public function __construct($data) {
+    public function __construct($data = array()) {
         $this->data = $data;
         $this->dirty_data = $data;
 
@@ -84,25 +79,24 @@ abstract class Yapo {
      */
     public static function get($id_or_ids) {
         $self_class = static::_class();
-
         // memory cache
-        $key = md5(serialize($id_or_ids));
-        if (!empty(self::$gets[$self_class][$key])) return self::$gets[$self_class][$key];
+        $cache = YapoMemory::get($id_or_ids, $self_class);
+        if ($cache) return $cache;
 
         if (is_array($id_or_ids)) {
             // query by ids
-            $result = static::_modelize_and_fill_up($id_or_ids);
+            $result = self::_modelize_and_fill_up($id_or_ids);
         } else {
             // query by id
-            list($filled_up) = (array_values(static::_modelize_and_fill_up(array($id_or_ids))) ?: array(0));
-
+            list($filled_up) = (array_values(self::_modelize_and_fill_up(array($id_or_ids))) ?: array(0));
             $result = empty($filled_up->id) ? null : $filled_up;
         }
 
-        self::$gets[$self_class][$key] = $result;
+        YapoMemory::set($id_or_ids, $result, $self_class);
 
         return $result;
     }
+
     /**
      * the query method, filter by conditions
      * ::filter(
@@ -140,8 +134,8 @@ abstract class Yapo {
         $pk = static::_table()->pk();
 
         // todo: refine
-        $and_conditions = static::field_to_column(implode(' AND ', $conditions));
-        $orders = static::field_to_column(implode(', ', $order));
+        $and_conditions = self::field_to_column(implode(' AND ', $conditions));
+        $orders = self::field_to_column(implode(', ', $order));
 
         $rows = static::_table()->select(
             '*',
@@ -157,18 +151,14 @@ abstract class Yapo {
             }, $rows)
             : array();
 
-        return array_values(static::_modelize_and_fill_up($ids));
+        return array_values(self::_modelize_and_fill_up($ids));
     }
 
     public static function count($conditions) {
         // todo refine
-        $conditions = array_map(function($c) {
-            return $c->sql();
-        }, $conditions);
+        $and_conditions = self::field_to_column(implode(' AND ', $conditions));
 
-        $and_conditions = static::field_to_column(implode(' AND ', $conditions));
-
-        return static::_table()->count('*', $and_conditions);
+        return self::_table()->count('*', $and_conditions);
     }
 
     /**
@@ -245,7 +235,7 @@ abstract class Yapo {
 
         if ($result) {
             // clear memory cache after removing
-            self::$gets[self::_class()] = array();
+            YapoMemory::clean_space(self::_class());
 
             // todo
             // remove extend tables
@@ -266,14 +256,16 @@ abstract class Yapo {
      */
     public static function _($field_name = null) {
         if ($field_name) {
-            // {YapoModel}::_('field_name');
-
-            $fields = static::_fields($field_name); // 5.4 Only variables should be passed by reference 
+            /*
+             * {YapoModel}::_('field_name');
+             */
+            $fields = static::_fields($field_name); // 5.4 Only variables should be passed by reference
             $field = array_shift($fields);
             return $field ? $field->querier() : null;
         } else {
-            // $_ = {YapoModel}::_();
-
+            /*
+             * $_ = {YapoModel}::_();
+             */
             $self_class = static::_class();
             return function($field) use ($self_class) {
                 return call_user_func(array($self_class, '_'), $field);
@@ -286,7 +278,7 @@ abstract class Yapo {
         $bundle = new YapoBundle();
         $modelizeds = array();
         foreach ($ids as $id) {
-            $modelized = static::_modelize($id, $bundle);
+            $modelized = self::_modelize($id, $bundle);
             $modelizeds[] = $modelized;
         }
 
@@ -313,7 +305,6 @@ abstract class Yapo {
 
         return $object;
     }
-
 
     private static function _table() {
         $class = static::_class();
@@ -393,69 +384,22 @@ abstract class Yapo {
         $r = $string;
 
         foreach ($matches[1] as $m) {
-            $r = '';
-            $r .= str_replace($m, static::_column_of($m), $string);
+            $r = str_replace($m, static::_column_of($m), $string);
         }
 
         return $r;
     }
 
-    /**
-     */
-    private static function _fields_to_columns($where) {
-        if (!is_array($where)) return $where;
-
-        $field_pattern = '/(.*?\b)(\w+)(\b.*)/';
-        $proccessed_where = array();
-        foreach ($where as $k => $v) {
-            $field = preg_replace($field_pattern, '$2', $k);
-
-            if (static::_column_of($field)) {
-                $k = preg_replace($field_pattern, '$1' . static::_column_of($field) . '$3', $k);
-            }
-
-            $proccessed_where[$k] = $v;
-        }
-
-        return $proccessed_where;
-    }
-
-    /**
-     */
-    private static function _fields_to_columns_order($order) {
-        if (!is_array($order)) return $order;
-
-        $field_pattern = '/(.*?\b)(\w+)(\b.*)/';
-        $proccessed_order = array();
-        foreach ($order as $k => $v) {
-            $field = preg_replace($field_pattern, '$2', $v);
-
-            if (static::_column_of($field)) {
-                $v = preg_replace($field_pattern, '$1' . static::_column_of($field) . '$3', $v);
-            }
-
-            $proccessed_order[$k] = $v;
-        }
-
-        return $proccessed_order;
-    }
-
-    private static function _fields_to_sql($conditions) {
-        return self::_fields_to_columns(
-            array_reduce($conditions, 'array_merge', array())
-        );
-    }
-
     private static function _column_of($field_name) {
-        foreach (static::_fields() as $f) {
+        foreach (self::_fields() as $f) {
             if ($f->name() != $field_name) continue;
 
-            $column = $f->column();
-
-            if ($column) {
+            if ($column = $f->column()) {
                 return $column;
             }
         }
+
+        return '';
     }
 
     private static function _class() {
@@ -495,7 +439,7 @@ abstract class Yapo {
         foreach ($siblings as $s) {
             // todo ??
 
-            $row = $s->row 
+            $row = $s->row
                 ?: (
                     empty($rows[$s->id])
                     ? ''

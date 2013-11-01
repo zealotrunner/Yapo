@@ -31,7 +31,7 @@ class Company extends Yapo\Yapo {
 }
 
 
-class CompanyTable extends Yapo\YapoTable {
+class CompanyTable extends Yapo\YapoCachedTable {
 
     public static function master() {
         return new Yapo\YapoConfig(
@@ -44,7 +44,7 @@ class CompanyTable extends Yapo\YapoTable {
     }
 }
 
-class CompanyDetailTable extends Yapo\YapoTable {
+class CompanyDetailTable extends Yapo\YapoCachedTable {
 
     public static function master() {
         return new Yapo\YapoConfig(
