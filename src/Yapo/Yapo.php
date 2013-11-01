@@ -113,9 +113,8 @@ abstract class Yapo {
      * ::page()
      */
     public static function filter(/*conditions*/) {
-        $conditions = array_reduce(func_get_args(), 'array_merge', array());
         return i(new YapoLazyList(static::_class()))
-            ->filter($conditions);
+            ->filter(func_get_args());
     }
 
     public static function order_by(/*$orders*/) {
@@ -163,6 +162,10 @@ abstract class Yapo {
 
     public static function count($conditions) {
         // todo refine
+        $conditions = array_map(function($c) {
+            return $c->sql();
+        }, $conditions);
+
         $and_conditions = static::field_to_column(implode(' AND ', $conditions));
 
         return static::_table()->count('*', $and_conditions);
@@ -252,6 +255,10 @@ abstract class Yapo {
         }
 
         return $result;
+    }
+
+    public function match($condition) {
+        return $condition->match($this);
     }
 
     /**

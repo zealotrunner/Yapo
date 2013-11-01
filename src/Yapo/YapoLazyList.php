@@ -23,6 +23,9 @@ class YapoLazyList extends \ArrayObject {
 
     public function filter($conditions = array()) {return $this->aand($conditions);}
     public function aand($conditions = array()) {
+        $conditions = array_map(function($c) {
+            return $c->sql();
+        }, $conditions);
         $this->conditions = $this->_combine($this->conditions, $conditions, 'AND');
 
         if (!$this->conditions) {
@@ -34,6 +37,9 @@ class YapoLazyList extends \ArrayObject {
     }
 
     public function oor($conditions = array()) {
+        $conditions = array_map(function($c) {
+            return $c->sql();
+        }, $conditions);
         $this->conditions = $this->_combine($this->conditions, $conditions, 'OR');
 
         $this->loaded = false;
@@ -144,9 +150,9 @@ class YapoLazyList extends \ArrayObject {
     public function __call($func, $args) {
         switch ($func) {
             case 'and':
-                return call_user_func_array(array($this, 'aand'), $args);
+                return call_user_func(array($this, 'aand'), $args);
             case 'or':
-                return call_user_func_array(array($this, 'oor'), $args);
+                return call_user_func(array($this, 'oor'), $args);
             default:
                 trigger_error("Call to undefined method " . __CLASS__ . "::$func()", E_USER_ERROR);
                 die;

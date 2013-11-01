@@ -264,6 +264,13 @@ class YapoTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue($succeed);
     }
 
+    public function test_match() {
+        $company_id_10 = Company::get(10);
+        $this->assertTrue(
+            $company_id_10->match(Company::_('id')->eq(10))
+        );
+    }
+
     private static function clean() {
         foreach (Company::filter(Company::_('id')->gt(13)) as $c) {
             $c->remove();
