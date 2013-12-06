@@ -64,6 +64,14 @@ class YapoField {
         }
     }
 
+    public function fork($row) {
+        if ($this->switch) {
+            return $this->switch[$row[$this->column()]];
+        } else {
+            return '';
+        }
+    }
+
     public function modifications($id, $value) {
         if ($this->enum && !in_array($value, array_keys($this->enum))) return array('', array(), array());
 
@@ -115,7 +123,7 @@ class YapoField {
     /**
      * eval the field
      */
-    public function eva($row, $sibling_rows = array()) {
+    public function eva($row, $sibling_rows) {
         $PAGE = 30;
         if ($this->if && !call_user_func($this->if, $row)) {
             return null;
@@ -124,10 +132,10 @@ class YapoField {
         // different field types
         // todo refine
         switch($this->_source_type()) {
-            case 'A':
+            case 'A': // simple
                 $value = $row;
                 break;
-            case 'B':
+            case 'B': // ->
                 $using = $this->using;
                 if ($this->of) {
                     $of_table_name = $this->of;
@@ -146,22 +154,22 @@ class YapoField {
                         $value = $of_table->select('*', $where = $of_table->pk() . ' IN ("' . implode('", "', $row[$using]) . '")', 'id DESC', 0, 10000);
                     }
                 } else {
-                    $other_xtable = $this->as;
+                    $other_model = $this->as;
 
                     if ($sibling_rows) {
-                        $values = every($PAGE, $sibling_rows, function($rows) use ($using, $other_xtable) {
+                        $values = every($PAGE, $sibling_rows, function($rows) use ($using, $other_model) {
                             $ids = array_map(function($r) use ($using) {
                                     return $r[$using];
                                 }, $rows);
-                            return $other_xtable::get($ids);
+                            return $other_model::get($ids);
                         });
                         $value = empty($values[$row[$using]]) ? '' : $values[$row[$using]];
                     } else {
-                        $value = $other_xtable::get($row[$using]);
+                        $value = $other_model::get($row[$using]);
                     }
                 }
                 break;
-            case 'C':
+            case 'C': // <-
                 if ($this->of) {
                     $field = $this->as;
                     $this_model_name = $this->namespace;
@@ -179,26 +187,26 @@ class YapoField {
                     $this_table = $this_table_name::instance();
                     $pk = $this_table->pk();
 
-                    $other_xtable = $this->as;
+                    $other_model = $this->as;
                     $with = $this->with;
 
                     if ($sibling_rows) {
-                        $values = every($PAGE, $sibling_rows, function($rows) use ($other_xtable, $pk, $with) {
+                        $values = every($PAGE, $sibling_rows, function($rows) use ($other_model, $pk, $with) {
                             $ids = array_map(function($r) use ($pk) {
                                 return $r[$pk];
                             }, $rows);
 
-                            return $other_xtable::filter(
-                                $other_xtable::_($with)->in($ids)
+                            return $other_model::filter(
+                                $other_model::_($with)->in($ids)
                             );
                         });
 
-                        $value = $other_xtable::filter(
-                            $other_xtable::_($this->with)->eq($row[$pk])
+                        $value = $other_model::filter(
+                            $other_model::_($this->with)->eq($row[$pk])
                         );
                     } else {
-                        $value = $other_xtable::filter(
-                            $other_xtable::_($this->with)->eq($row[$pk])
+                        $value = $other_model::filter(
+                            $other_model::_($this->with)->eq($row[$pk])
                         );
                     }
                 }
@@ -207,12 +215,15 @@ class YapoField {
 
         // filter the result
         if (is_callable($this->as)) {
+            // ->as(function() { return 'something';})
             if ($value) {
                 $value = call_user_func($this->as, $value);
             }
         } else if (preg_match('/^[A-Z].*(_[A-Z])*/', $this->as)) {
+            // ->as('ModelName')
             // pass
         } else {
+            // ->as('field_name')
             if (is_assoc($value)) {
                 $value = empty($value[$this->as]) ? 0 : $value[$this->as];
             } else {

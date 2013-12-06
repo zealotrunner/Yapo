@@ -90,6 +90,8 @@ class YapoFieldQuerier {
     public function asc() { return $this->set('ASC', '')->sql();}
     public function desc() { return $this->set('DESC', '')->sql();}
 
+    public function false() { return '1 = 0';}
+
     public function sql() {
         return call_user_func_array(self::$operators[$this->operator]['sql'], array($this->backquoted_field, $this->value));
     }

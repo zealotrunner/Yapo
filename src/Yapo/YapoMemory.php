@@ -4,28 +4,53 @@ namespace Yapo;
 
 class YapoMemory {
 
-    static private $data = array();
+    static private $instances = array();
 
-    private function __consturct() {}
+    private $data = array();
 
-    public static function get($key, $space = 'default') {
-        if (!empty(self::$data[$space][static::key($key)])) {
-            return self::$data[$space][static::key($key)];
+    private $space;
+
+    private $version;
+
+    private function __construct($space = 'default') {
+        $this->space = $space;
+    }
+
+    public static function s($space) {
+        if (empty(self::$instances[$space])) {
+            self::$instances[$space] = new self($space);
+        }
+
+        return self::$instances[$space];
+    }
+
+    public function get($key) {
+        if (!empty($this->data[$this->space][$this->key($key)])) {
+            return $this->data[$this->space][$this->key($key)];
         } else {
             return null;
         }
     }
 
-    public static function set($key, $value, $space = 'default') {
-        self::$data[$space][static::key($key)] = $value;
+    public function set($key, $value) {
+        $this->data[$this->space][$this->key($key)] = $value;
     }
 
-    public static function clean_space($space = 'default') {
-        self::$data[$space] = array();
+    public function delete($key) {
+        unset($this->data[$this->space][$this->key($key)]);
     }
 
-    private static function key($key) {
-        return md5(serialize($key));
+    public function truncate() {
+        $this->inc();
+        // $this->data[$this->space] = array();
+    }
+
+    private function inc() {
+        $this->version = ($this->version + 1) % 100;
+    }
+
+    private function key($key) {
+        return md5(serialize($key) . $this->version);
     }
 
 

@@ -12,6 +12,7 @@ class YapoFieldDefiner {
     public $using = null;
     public $with = null;
     public $if = null;
+    public $switch = null;
 
     public function aas($as, $writer = null) {
         $this->as = $as;
@@ -53,6 +54,11 @@ class YapoFieldDefiner {
         return $this;
     }
 
+    public function sswitch($switch) {
+        $this->switch = $switch;
+        return $this;
+    }
+
     public function __call($func, $args) {
         switch ($func) {
             case 'as':
@@ -60,6 +66,9 @@ class YapoFieldDefiner {
                 break;
             case 'if':
                 return call_user_func_array(array($this, 'iif'), $args);
+                break;
+            case 'switch':
+                return call_user_func_array(array($this, 'sswitch'), $args);
                 break;
             default:
                 trigger_error("Call to undefined method " . __CLASS__ . "::$func()", E_USER_ERROR);
