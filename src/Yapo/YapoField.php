@@ -25,7 +25,7 @@ class YapoField {
         $this->namespace = $namespace;
 
         $this->definer = new YapoFieldDefiner();
-        $this->querier = new YapoFieldQuerier($field);
+        $this->querier = new YapoFieldQuerier($this);
     }
 
     public function __get($field) {
@@ -35,7 +35,6 @@ class YapoField {
             return null;
         }
     }
-
 
     public function definer() {
         return $this->definer;
@@ -51,6 +50,14 @@ class YapoField {
 
     public function simple() {
         return $this->_source_type() == 'A';
+    }
+
+    public function model() {
+        return $this->_source_type() == 'B' && !$this->leaf() ? $this->as : null;
+    }
+
+    public function leaf() {
+        return $this->simple() || $this->of ? true : false;
     }
 
     public function column() {
@@ -77,8 +84,6 @@ class YapoField {
 
         if ($this->of) {
             $table = $this->of;
-
-            // $modification = array_merge($where, array($this->as => $value));
 
             if ($id) {
                 if ($this->with) {
@@ -137,7 +142,7 @@ class YapoField {
                 break;
             case 'B': // ->
                 $using = $this->using;
-                if ($this->of) {
+                if ($this->leaf()) {
                     $of_table_name = $this->of;
                     $of_table = $of_table_name::instance();
                     if ($sibling_rows) {
@@ -170,7 +175,7 @@ class YapoField {
                 }
                 break;
             case 'C': // <-
-                if ($this->of) {
+                if ($this->leaf()) {
                     $field = $this->as;
                     $this_model_name = $this->namespace;
                     $this_table_name = $this_model_name::table();

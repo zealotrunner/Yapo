@@ -17,8 +17,23 @@ class Employee extends Yapo\Yapo {
                                         2 => 'Female'
                                     ));
 
+        $define('born')             ->as('born'); // ->of('EmployeeTable')
+
         $define('company')          ->as('Company')->using('company_id');
     }
+
+    protected static function query($query) {
+
+        $query('company')->_('name')     ->via('name')->of('CompanyQueryTable')->using('company_id');
+
+        $query('company')->_('name')     ->via('name')->of('CompanySolr');
+
+    }
+
+    // public static function decorate($decorate_with) {
+    //     $decorate_with('YapoCache', new YapoConfig())
+    //             ->then('YapoAnothorCache', new YapoConfig());
+    // }
 
 }
 

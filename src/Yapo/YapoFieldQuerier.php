@@ -5,6 +5,7 @@ namespace Yapo;
 class YapoFieldQuerier {
 
     private $field;
+
     private $operator;
     private $value;
 
@@ -14,7 +15,7 @@ class YapoFieldQuerier {
 
     public function __construct($field) {
         $this->field = $field;
-        $this->backquoted_field = '`' . $field . '`';
+        $this->backquoted_field = '`' . $field->name() . '`';
 
         if (!self::$operators) {
             self::$operators = array(
@@ -73,6 +74,15 @@ class YapoFieldQuerier {
         return $this;
     }
 
+    public function _($field_name) {
+        if (!$model = $this->field->model()) {
+            trigger_error("Call to undefined method " . __CLASS__ . "::_()", E_USER_ERROR);
+        } else {
+            $field = $model::fields($field_name);
+            return $field ? $field->querier() : null;
+        }
+    }
+
     public function eq($value) { return $this->set('=', $value);}
     public function neq($value) { return $this->set('!=', $value);}
 
@@ -97,7 +107,7 @@ class YapoFieldQuerier {
     }
 
     public function match($object) {
-        return call_user_func_array(self::$operators[$this->operator]['php'], array($object->{$this->field}, $this->value));
+        return call_user_func_array(self::$operators[$this->operator]['php'], array($object->{$this->field->name()}, $this->value));
     }
 
 }

@@ -189,6 +189,13 @@ class YapoTest extends PHPUnit_Framework_TestCase {
 
     }
 
+    public function test_deep_query() {
+        Yapo\debug(Company::_('ceo')->_('born')->gt(1976));
+        // $companies_ceo_born_after_1976 = Company::filter(
+        //     Company::_('ceo')->_('born')->gt(1976)
+        // );
+    }
+
     public function test_save() {
         // create
         $yapo_company = new Company(array(

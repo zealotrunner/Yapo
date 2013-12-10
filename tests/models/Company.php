@@ -97,3 +97,22 @@ class SpecialCompanyTable extends Yapo\YapoCachedTable {
         );
     }
 }
+
+// class CompanyQueryTable extends Yapo\YapoCachedTable {
+
+//     public static function master() {
+//         return new Yapo\YapoConfig(
+//             $dsn      = TEST_DSN,
+//             $user     = TEST_USER,
+//             $password = TEST_PASS,
+//             $table    = 'special_company',
+//             $pk       = 'id'
+//         );
+//     }
+
+//     public static function sync($sync) {
+
+//         $sync('company_name')   ->from('name')->of('CompanyTable');
+
+//     }
+// }

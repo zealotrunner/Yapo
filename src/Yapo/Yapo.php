@@ -245,6 +245,50 @@ abstract class Yapo {
         return $condition->match($this);
     }
 
+    public static function fields($field_name = '') {
+        static $fields = array();
+        $class = static::_class();
+
+        if (empty($fields[$class])) {
+
+            // get subclass inherit chain
+            $chain = call_user_func(function($bottom_class, $top_class) {
+                $chain = array($bottom_class);
+                for (;;) {
+                    $parent_class = get_parent_class($bottom_class);
+
+                    if (!$parent_class) break;
+
+                    $chain[] = $parent_class;
+                    $bottom_class = $parent_class;
+                }
+
+                return $chain;
+            }, $class, get_class());
+
+            // subclasses will define the fields
+            foreach ($chain as $c) {
+                $c::define_fields(function($field) use ($class) {
+                    return YapoField::define($field, $class);
+                });
+            }
+
+            // the 'id' field must be defined
+            YapoField::define('id', $class)
+                ->as(static::_table()->pk());
+
+            $fields[$class] = YapoField::defined($class);
+        }
+
+        return $field_name
+            ? (
+                empty($fields[$class][$field_name])
+                ? null
+                : $fields[$class][$field_name]
+              )
+            : $fields[$class];
+    }
+
     /**
      * access fields of the model
      */
@@ -253,8 +297,7 @@ abstract class Yapo {
             /*
              * {YapoModel}::_('field_name');
              */
-            $fields = static::_fields($field_name); // 5.4 Only variables should be passed by reference
-            $field = array_shift($fields);
+            $field = static::fields($field_name); // 5.4 Only variables should be passed by reference
             return $field ? $field->querier() : null;
         } else {
             /*
@@ -300,7 +343,7 @@ abstract class Yapo {
     }
 
     private static function real_class($row) {
-        foreach (static::_fields() as $f) {
+        foreach (static::fields() as $f) {
             if ($class = $f->fork($row)) {
                 return $class;
             }
@@ -344,72 +387,25 @@ abstract class Yapo {
         return $wrap($data);
     }
 
-
     private static function _table() {
         $class = static::_class();
         $table = $class::table();
         return $table::instance();
     }
 
-    private static function _fields($field_name = '') {
-        static $fields = array();
-        $class = static::_class();
-
-        if (empty($fields[$class])) {
-
-            // get subclass inherit chain
-            $chain = call_user_func(function($bottom_class, $top_class) {
-                $chain = array($bottom_class);
-                for (;;) {
-                    $parent_class = get_parent_class($bottom_class);
-
-                    if (!$parent_class) break;
-
-                    $chain[] = $parent_class;
-                    $bottom_class = $parent_class;
-                }
-
-                return $chain;
-            }, $class, get_class());
-
-            // subclasses will define the fields
-            foreach ($chain as $c) {
-                $c::define_fields(function($field) use ($class) {
-                    return YapoField::define($field, $class);
-                });
-            }
-
-            // the 'id' field must be defined
-            YapoField::define('id', $class)
-                ->as(static::_table()->pk());
-
-            $fields[$class] = YapoField::defined($class);
-        }
-
-        return $field_name
-            ? (
-                empty($fields[$class][$field_name])
-                ? array(null)
-                : array($fields[$class][$field_name])
-              )
-            : $fields[$class];
-    }
-
     private static function _modifications($id, $dirty_data) {
         $modifications = array();
         foreach ($dirty_data as $field_name => $d) {
-            foreach (static::_fields() as $f) {
-                if ($f->name() != $field_name) continue;
+            if (!$f = static::fields($field_name)) continue;
 
-                list($table_name, $where, $modification) = $f->modifications($id, $d);
+            list($table_name, $where, $modification) = $f->modifications($id, $d);
 
-                if (!isset($modifications[$table_name])) {
-                    $modifications[$table_name] = array('where' => array(), 'modification' => array());
-                }
-
-                $modifications[$table_name]['where'] = $where;
-                $modifications[$table_name]['modification'] = array_merge($modifications[$table_name]['modification'], $modification);
+            if (!isset($modifications[$table_name])) {
+                $modifications[$table_name] = array('where' => array(), 'modification' => array());
             }
+
+            $modifications[$table_name]['where'] = $where;
+            $modifications[$table_name]['modification'] = array_merge($modifications[$table_name]['modification'], $modification);
         }
 
         return $modifications;
@@ -429,12 +425,10 @@ abstract class Yapo {
     }
 
     private static function _column_of($field_name) {
-        foreach (self::_fields() as $f) {
-            if ($f->name() != $field_name) continue;
+        if (!$f = self::fields($field_name)) return '';
 
-            if ($column = $f->column()) {
-                return $column;
-            }
+        if ($column = $f->column()) {
+            return $column;
         }
 
         return '';
@@ -462,7 +456,7 @@ abstract class Yapo {
     }
 
     public function _eva($field, $row, $rows) {
-         foreach (self::_fields() as $f) {
+         foreach (self::fields() as $f) {
             // fill all simple fields in all siblings
             if ((!$field && $f->simple()) || ($field && $f)) {
                 $this->data[$f->name()] = $f->eva($row, $rows);
