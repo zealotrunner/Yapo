@@ -3,7 +3,7 @@
 CREATE TABLE "company" (
   "id" int(10) NOT NULL AUTO_INCREMENT,
   "name" varchar(200) NOT NULL,
-  "ceo" int(10) NOT NULL,
+  "ceo_id" int(10) NOT NULL,
   "nasdaq_symbol" varchar(10) NOT NULL,
   "founded" int(10) NOT NULL,
   "special" tinyint(2) NOT NULL,
@@ -29,21 +29,21 @@ INSERT INTO "company_detail" VALUES (11,'Google Inc. is an American multinationa
 CREATE TABLE "employee" (
   "id" int(10) NOT NULL AUTO_INCREMENT,
   "name" varchar(50) NOT NULL,
+  "born" smallint(4) NOT NULL,
   "sex" tinyint(3) NOT NULL,
   "company_id" int(10) NOT NULL,
   PRIMARY KEY ("id")
 );
 /*!40101 SET character_set_client = @saved_cs_client */;
-INSERT INTO "employee" VALUES (20,'Steve Jobs',1,10);
-INSERT INTO "employee" VALUES (21,'Steve Wozniak',1,10);
-INSERT INTO "employee" VALUES (22,'Larry Page',1,11);
-INSERT INTO "employee" VALUES (23,'Steve Ballmer',1,12);
-INSERT INTO "employee" VALUES (24,'Mark Zuckerberg',1,13);
-/*!40101 SET character_set_client = @saved_cs_client */;
+INSERT INTO "employee" VALUES (20,'Steve Jobs',1955,1,10);
+INSERT INTO "employee" VALUES (21,'Steve Wozniak',1950,1,10);
+INSERT INTO "employee" VALUES (22,'Larry Page',1973,1,11);
+INSERT INTO "employee" VALUES (23,'Steve Ballmer',1956,1,12);
+INSERT INTO "employee" VALUES (24,'Mark Zuckerberg',1984,1,13);
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE "special_company" (
-  "id" int(10) NOT NULL,
+  "id" int(10) NOT NULL AUTO_INCREMENT,
   "why" varchar(50) NOT NULL,
   PRIMARY KEY ("id")
 );

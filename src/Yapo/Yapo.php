@@ -125,17 +125,13 @@ abstract class Yapo {
     /**
      *
      */
-    public static function _find($conditions, $order = array(), $page = 1, $page_size = 500) {
+    public static function _find(YapoCondition $condition, $order = array(), $page = 1, $page_size = 500) {
         $pk = static::_table()->pk();
-
-        // todo: refine
-        $and_conditions = self::field_to_column(implode(' AND ', $conditions));
-        $orders = self::field_to_column(implode(', ', $order));
 
         $rows = static::_table()->select(
             "`$pk`",
-            $and_conditions,
-            $orders,
+            $condition->sql(),
+            implode(', ', $order),
             ($page - 1) * $page_size,
             $page_size
         );
@@ -149,11 +145,9 @@ abstract class Yapo {
         return array_values(self::_modelize_and_fill_up($ids));
     }
 
-    public static function count($conditions) {
+    public static function count($condition) {
         // todo refine
-        $and_conditions = self::field_to_column(implode(' AND ', $conditions));
-
-        return self::_table()->count('*', $and_conditions);
+        return self::_table()->count('*', $condition->sql());
     }
 
     /**
@@ -181,10 +175,8 @@ abstract class Yapo {
 
             // TODO ugly
             // replace into? or  http://stackoverflow.com/questions/2930378/mysql-replace-into-alternative
-            $exists = $w
-                ? $table->select('*', implode(' AND ', array_map(function($f, $n) {
-                        return "`$f` = '$n'";
-                    }, array_keys($w), array_values($w))), '`id` DESC', 0, 10000)
+            $exists = !$w->empty()
+                ? $table->select('*', $w->sql(), '`id` DESC', 0, 10000)
                 : false;
 
             if ($exists) {
@@ -193,9 +185,7 @@ abstract class Yapo {
                     implode(', ', array_map(function($f, $n) {
                         return "`$f` = '$n'";
                     }, array_keys($m), array_values($m))),
-                    implode(' AND ', array_map(function($f, $n) {
-                        return "`$f` = '$n'";
-                    }, array_keys($w), array_values($w)))
+                    $w->sql()
                 );
             } else {
                 // new
@@ -225,7 +215,10 @@ abstract class Yapo {
         // let the subclass overwrite
         if ($logically) return false;
 
-        $result = static::_table()->delete($where = '`' . static::_table()->pk() . '` = ' . $this->data['id']);
+        // $result = static::_table()->delete($where = '`' . static::_table()->pk() . '` = ' . $this->data['id']);
+        $result = static::_table()->delete(
+            YapoCondition::i(static::_table()->pk(), '=', $this->data['id'])->sql()
+        );
 
         if ($result) {
             // clear memory cache after removing
@@ -313,7 +306,7 @@ abstract class Yapo {
     private static function _modelize_and_fill_up($ids) {
         $rows = static::_table()->select(
             '*',
-            self::field_to_column('id IN (' . implode(',', $ids) . ')'),
+            YapoCondition::i(static::_table()->pk(), 'IN', $ids)->sql(),
             '',
             0,
             count($ids)
@@ -409,19 +402,6 @@ abstract class Yapo {
         }
 
         return $modifications;
-    }
-
-    private static function field_to_column($string) {
-        $field_pattern = '/`(\w+)`/';
-        preg_match_all($field_pattern, $string, $matches);
-
-        $r = $string;
-
-        foreach ($matches[1] as $m) {
-            $r = str_replace($m, static::_column_of($m), $string);
-        }
-
-        return $r;
     }
 
     private static function _column_of($field_name) {

@@ -27,9 +27,9 @@ class YapoBundle {
         $table = $this->table;
 
         $this->rows = every(30, $this->objects, function($object) use ($table) {
-            return $table->select('*', $where = '`' . $table->pk() . '` IN ("' . implode('", "', array_map(function($o) {
+            return $table->select('*', YapoCondition::i($table->pk(), 'IN', array_map(function($o) {
                return $o->id;
-            }, $object)) . '")', '`id` DESC', 0, 10000);
+            }, $object))->sql(), '`id` DESC', 0, 10000);
         });
     }
 

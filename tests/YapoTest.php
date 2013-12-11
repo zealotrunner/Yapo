@@ -16,6 +16,27 @@ class YapoTest extends PHPUnit_Framework_TestCase {
         self::clean();
     }
 
+    public function test_deep_query() {
+
+        // WHERE ceo_id IN (SELECT id FROM employee WHERE born > 1976);
+        // array(
+        //     'column' => born
+        //     'op' => >
+        //     'value' => 1976
+        //     'model' => Employee
+        //     'column' => ceo_id
+        // )
+        // Yapo\debug(Company::_('ceo')->_('born')->gt(1976)->where());
+        // Company::_('ceo')->_('born')->gt(1976)->where();
+
+        // $companies_ceo_born_after_1976 = Company::filter(
+        //     Company::_('ceo')->_('born')->gt(1976)
+        // );
+
+        // Yapo\debug(Company::_('ceo')->_('born')->gt(1976));
+        // Yapo\debug($companies_ceo_born_after_1976);
+    }
+
     public function test_get() {
         // get by id
         $company_id_10 = Company::get(10);
@@ -189,13 +210,6 @@ class YapoTest extends PHPUnit_Framework_TestCase {
 
     }
 
-    public function test_deep_query() {
-        Yapo\debug(Company::_('ceo')->_('born')->gt(1976));
-        // $companies_ceo_born_after_1976 = Company::filter(
-        //     Company::_('ceo')->_('born')->gt(1976)
-        // );
-    }
-
     public function test_save() {
         // create
         $yapo_company = new Company(array(
@@ -355,7 +369,6 @@ class YapoTest extends PHPUnit_Framework_TestCase {
     }
 
     private static function clean() {
-        // return;
         foreach (Company::filter(Company::_('id')->gt(13)) as $c) {
             $c->remove();
         }

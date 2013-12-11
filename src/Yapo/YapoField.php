@@ -4,25 +4,27 @@ namespace Yapo;
 
 class YapoField {
 
-    private static $namespaces = array();
+    private static $models = array();
+
+    private $field;
+    private $model;
 
     private $definer;
-
     private $querier;
 
-    public static function define($field, $namespace) {
-        if (!isset(static::$namespaces[$namespace])) {
-            static::$namespaces[$namespace] = array();
+    public static function define($field, $model) {
+        if (!isset(static::$models[$model])) {
+            static::$models[$model] = array();
         }
-        if (!isset(static::$namespaces[$namespace][$field])) {
-            static::$namespaces[$namespace][$field] = new self($field, $namespace);
+        if (!isset(static::$models[$model][$field])) {
+            static::$models[$model][$field] = new self($field, $model);
         }
-        return static::$namespaces[$namespace][$field]->definer;
+        return static::$models[$model][$field]->definer;
     }
 
-    private function __construct($field, $namespace) {
+    private function __construct($field, $model) {
         $this->field = $field;
-        $this->namespace = $namespace;
+        $this->model = $model;
 
         $this->definer = new YapoFieldDefiner();
         $this->querier = new YapoFieldQuerier($this);
@@ -40,19 +42,23 @@ class YapoField {
         return $this->definer;
     }
 
-    public function querier() {
-        return $this->querier;
+    public function querier($last = null) {
+        return $this->querier->last($last);
     }
 
     public function name() {
         return $this->field;
     }
 
+    public function model() {
+        return $this->model;
+    }
+
     public function simple() {
         return $this->_source_type() == 'A';
     }
 
-    public function model() {
+    public function pointed_model() {
         return $this->_source_type() == 'B' && !$this->leaf() ? $this->as : null;
     }
 
@@ -87,15 +93,15 @@ class YapoField {
 
             if ($id) {
                 if ($this->with) {
-                    $where = array($this->with => $id);
+                    $where = YapoCondition::i($this->with, '=', $id);
                 } else {
-                    $where = array($this->using => $id);
+                    $where = YapoCondition::i($this->using, '=', $id);
                 }
 
                 $modification = array($this->as => $value);
             } else {
                 $id = 'LAST_INSERT_ID';
-                $where = array();
+                $where = YapoCondition::i();
 
                 if ($this->with) {
                     $id_modification = array($this->with => $id);
@@ -107,13 +113,13 @@ class YapoField {
             }
 
         } else {
-            $namespace = $this->namespace;
-            $table = $namespace::table();
+            $model = $this->model;
+            $table = $model::table();
 
             if ($id) {
-                $where = array($table::instance()->pk() => $id);
+                $where = YapoCondition::i($table::instance()->pk(), '=', $id);
             } else {
-                $where = array();
+                $where = YapoCondition::i();
             }
 
             $modification = $this->writer
@@ -151,12 +157,12 @@ class YapoField {
                                 return $r[$using];
                             }, $rows);
 
-                            return $of_table->select('*', $where = $of_table->pk() . ' IN ("' . implode('", "', $ids) . '")', 'id DESC', 0, 10000);
+                            return $of_table->select('*', YapoCondition::i($of_table->pk(), 'IN', $ids)->sql(), $of_table->pk() . ' DESC', 0, 10000);
                         });
 
                         $value = $values[$row[$using]];
                     } else {
-                        $value = $of_table->select('*', $where = $of_table->pk() . ' IN ("' . implode('", "', $row[$using]) . '")', 'id DESC', 0, 10000);
+                        $value = $of_table->select('*', YapoCondition::i($of_table->pk(), 'IN', $row[$using])->sql(), $of_table->pk() . ' DESC', 0, 10000);
                     }
                 } else {
                     $other_model = $this->as;
@@ -176,21 +182,22 @@ class YapoField {
                 break;
             case 'C': // <-
                 if ($this->leaf()) {
-                    $field = $this->as;
-                    $this_model_name = $this->namespace;
-                    $this_table_name = $this_model_name::table();
-                    $this_table = $this_table_name::instance();
-                    $of_table_name = $this->of;
-                    $of_table = $of_table_name::instance();
+                    // ?? todo
+                    die('todo');
+                    // $field = $this->as;
+                    // $this_model_name = $this->model;
+                    // $this_table_name = $this_model_name::table();
+                    // $this_table = $this_table_name::instance();
+                    // $of_table_name = $this->of;
+                    // $of_table = $of_table_name::instance();
 
-                    $value = $of_table->find(array(
-                        $this->with => $row[$this_table->get_table_pk()]
-                    ));
+                    // $value = $of_table->find(array(
+                    //     $this->with => $row[$this_table->get_table_pk()]
+                    // ));
                 } else {
-                    $this_model_name = $this->namespace;
+                    $this_model_name = $this->model;
                     $this_table_name = $this_model_name::table();
-                    $this_table = $this_table_name::instance();
-                    $pk = $this_table->pk();
+                    $pk = $this_table_name::instance()->pk();
 
                     $other_model = $this->as;
                     $with = $this->with;
@@ -207,11 +214,11 @@ class YapoField {
                         });
 
                         $value = $other_model::filter(
-                            $other_model::_($this->with)->eq($row[$pk])
+                            $other_model::_($with)->eq($row[$pk])
                         );
                     } else {
                         $value = $other_model::filter(
-                            $other_model::_($this->with)->eq($row[$pk])
+                            $other_model::_($with)->eq($row[$pk])
                         );
                     }
                 }
@@ -249,8 +256,8 @@ class YapoField {
         return $value;
     }
 
-    public static function defined($namespace) {
-        return static::$namespaces[$namespace];
+    public static function defined($model) {
+        return static::$models[$model];
     }
 
     private function _source_type() {

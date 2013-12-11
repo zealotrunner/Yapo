@@ -18,13 +18,13 @@ class Company extends Yapo\Yapo {
                                     ->using('id');
 
         $define('ceo')              ->as('Employee')
-                                    ->using('ceo');
+                                    ->using('ceo_id');
 
         $define('employees')        ->as('Employee')
                                     ->with('company');
 
-        $define('brief')            ->as(function($c_row) {
-                                        return "{$c_row['name']}, founded in {$c_row['founded']}.";
+        $define('brief')            ->as(function($row) {
+                                        return "{$row['name']}, founded in {$row['founded']}.";
                                     }); // ->of('CompanyTable');
 
         $define('special')          ->as('special')->switch(array(

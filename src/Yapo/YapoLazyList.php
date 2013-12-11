@@ -8,7 +8,7 @@ class YapoLazyList extends \ArrayObject {
 
     private $loaded = false;
 
-    private $conditions = array();
+    private $condition = null;
     private $orders = array();
     private $page = 1;
     private $page_size = 500;
@@ -17,30 +17,31 @@ class YapoLazyList extends \ArrayObject {
         parent::__construct();
 
         $this->table = $table;
+        $this->condition = YapoCondition::i();
     }
 
-    public function filter($conditions = array()) {return $this->aand($conditions);}
-    public function aand($conditions = array()) {
-        $this->conditions = $this->_combine(
-            $this->conditions,
-            array_map(function($c) { return $c->sql();}, $conditions),
-            'AND'
-        );
+    public function filter($queriers = array()) {return $this->aand($queriers);}
+    public function aand($queriers = array()) {
+        $this->condition->and(array_map(function($q) {
+            return $q->condition();
+        }, $queriers));
 
-        if (!$this->conditions) {
-            $this->conditions = array('1 = 0');
+        if ($this->condition->empty()) {
+            $this->condition->false();
         }
 
         $this->loaded = false;
         return $this;
     }
 
-    public function oor($conditions = array()) {
-        $this->conditions = $this->_combine(
-            $this->conditions,
-            array_map(function($c) { return $c->sql();}, $conditions),
-            'OR'
-        );
+    public function oor($queriers = array()) {
+        $this->condition->or(array_map(function($q) {
+            return $q->condition();
+        }, $queriers));
+
+        if ($this->condition->empty()) {
+            $this->condition->false();
+        }
 
         $this->loaded = false;
         return $this;
@@ -69,16 +70,17 @@ class YapoLazyList extends \ArrayObject {
         if (!$another_lazy_list) return $this;
         if ($another_lazy_list->table != $this->table) return $this;
 
+        // return a new(unioned) LazyList
         $union = new self($this->table);
-        $union->conditions = $this->_combine($this->conditions, $another_lazy_list->conditions, 'OR');
-        $union->loaded = false;
+        $union->condition->copy($this->condition)->or($another_lazy_list->condition);
 
+        $union->loaded = false;
         return $union;
     }
 
     public function total() {
         $table = $this->table;
-        return $table::count($this->conditions);
+        return $table::count($this->condition);
     }
 
     /**
@@ -118,23 +120,13 @@ class YapoLazyList extends \ArrayObject {
         return parent::getArrayCopy();
     }
 
-    private function _combine($conditions_a, $conditions_b, $and_or) {
-        if (!$conditions_a) return $conditions_b;
-        if (!$conditions_b) return $conditions_a;
-
-        $conditions_ax = '(' . implode(' AND ', $conditions_a) . ')';
-        $conditions_bx = '(' . implode(' AND ', $conditions_b) . ')';
-
-        return array("($conditions_ax $and_or $conditions_bx)");
-    }
-
     private function _load() {
         if ($this->loaded) return;
 
         $table = $this->table;
 
         $result = $table::_find(
-            $this->conditions,
+            $this->condition,
             $this->orders,
             $this->page,
             $this->page_size
