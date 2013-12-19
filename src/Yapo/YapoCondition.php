@@ -4,18 +4,40 @@ namespace Yapo;
 
 class YapoCondition {
 
+    /**
+     * array(
+     *    'column' => $column,
+     *    'op' => $op,
+     *    'value' => $value
+     * )
+     * 
+     * array(
+     *    'logic' => 'and'
+     *    'conditions' => array(...)
+     * )
+     *
+     */
     private $condition = array();
 
-    private function __construct($conditions = array()) {
-        $this->and($conditions);
+    private function __construct($column, $op, $value) {
+        $this->condition = ($column && $op) 
+            ? array(
+                'column' => $column,
+                'op' => $op,
+                'value' => $value
+            )
+            : array();
     }
 
     public static function i($column = '', $op = '', $value = '') {
-        if ($column && $op) {
-            return new self(array(array($column, $op, $value)));
-        } else {
-            return new self();
-        }
+        return new self($column, $op, $value);
+    }
+
+    public function select_from($pk, $table) {
+        $this->select_pk = $pk;
+        $this->select_table = $table;
+
+        return $this;
     }
 
     public function __call($func, $args) {
@@ -40,43 +62,30 @@ class YapoCondition {
     }
 
     protected function aand($conditions) {
-        if ($conditions instanceof YapoCondition) {
-            $conditions = $conditions->_v();
-        }
+        array_unshift($conditions, 'and');
+        $and_condition = call_user_func_array(array($this, '_combine'), $conditions);
 
-        $this->condition = $this->_combine('and', $this->condition, array_reduce($conditions, function($m, $c) {
-            list($column, $op, $value) = $c;
-
-            $m['logic'] = 'and';
-            $m['conditions'][] = array(
-                'column' => $column,
-                'op' => $op,
-                'value' => $value
-            );
-
-            return $m;
-        }, array()));
+        $this->condition = $this->_combine(
+            'and',
+            $this->condition,
+            $and_condition
+        );
 
         return $this;
     }
 
     protected function oor($conditions) {
-        if ($conditions instanceof YapoCondition) {
-            $conditions = $conditions->_v();
-        }
+        // todo remove this 
+        $conditions = is_array($conditions) ? $conditions : array($conditions);
 
-        $this->condition = $this->_combine('or', $this->condition, array_reduce($conditions, function($m, $c) {
-            list($column, $op, $value) = $c;
-
-            $m['logic'] = 'and';
-            $m['conditions'][] = array(
-                'column' => $column,
-                'op' => $op,
-                'value' => $value
-            );
-
-            return $m;
-        }, array()));
+        array_unshift($conditions, 'and');
+        $and_condition = call_user_func_array(array($this, '_combine'), $conditions);
+        
+        $this->condition = $this->_combine(
+            'or',
+            $this->condition,
+            $and_condition
+        );
 
         return $this;
     }
@@ -86,7 +95,7 @@ class YapoCondition {
     }
 
     protected function ffalse() {
-        $this->condition = 'false';
+        $this->condition = '1 = 0'; // false
         return $this;
     }
 
@@ -101,11 +110,16 @@ class YapoCondition {
                 // array(
                 //     'column' => '',
                 //     'op' => '',
-                //     'value' => ''|array(),
+                //     'value' => ''|array()|YapoCondition,
                 // )
-                $value = is_array($c['value'])
-                    ? "('" . implode("', '", $c['value']) . "')"
-                    : "'{$c['value']}'";
+                if ($c['value'] instanceof YapoCondition) {
+                    $subquery = $c['value'];
+                    $value = "({$subquery->select_pk_sql()})";
+                } else if (is_array($c['value'])) {
+                    $value = "('" . implode("', '", $c['value']) . "')";
+                } else {
+                    $value = "'{$c['value']}'";
+                }
 
                 return "`{$c['column']}` {$c['op']} {$value}";
             } else {
@@ -126,22 +140,34 @@ class YapoCondition {
         return $to_sql($this->condition);
     }
 
-    private function _v() {
-        return array_map(function($c) {
-            return array_values($c);
-        }, $this->condition['conditions']);
+    public function select_pk_sql() {
+        return "SELECT `{$this->select_pk}` FROM `{$this->select_table}` WHERE {$this->sql()}";
     }
 
-    private function _combine($and_or, $conditions_a, $conditions_b) {
-        if (!$conditions_a) return $conditions_b;
-        if (!$conditions_b) return $conditions_a;
+    public function _v() {
+        return $this->condition;
+    }
 
-        return array(
-            'logic' => $and_or,
-            'conditions' => array(
-                $conditions_a, $conditions_b
-            )
-        );
+    private function _combine(/*$and_or, $conditions_a, $condition_b, ...*/) {
+        $args = func_get_args();
+        $and_or = array_shift($args);
+
+        $conditions = array_filter(array_map(function($a) {
+            if ($a instanceof YapoCondition) {
+                return $a->_v();
+            } else {
+                return $a;
+            }
+        }, $args));
+
+        if (count($conditions) > 1) {
+            return array(
+                'logic' => $and_or,
+                'conditions' => $conditions
+            );
+        } else {
+            return array_shift($conditions);
+        }
     }
 
 }

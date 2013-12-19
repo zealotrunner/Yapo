@@ -10,7 +10,6 @@ class YapoField {
     private $model;
 
     private $definer;
-    private $querier;
 
     public static function define($field, $model) {
         if (!isset(static::$models[$model])) {
@@ -27,7 +26,6 @@ class YapoField {
         $this->model = $model;
 
         $this->definer = new YapoFieldDefiner();
-        $this->querier = new YapoFieldQuerier($this);
     }
 
     public function __get($field) {
@@ -43,7 +41,7 @@ class YapoField {
     }
 
     public function querier($last = null) {
-        return $this->querier->last($last);
+        return i(new YapoFieldQuerier($this))->last($last);
     }
 
     public function name() {
@@ -68,8 +66,10 @@ class YapoField {
 
     public function column() {
         if (is_string($this->as) && !class_exists($this->as)) {
+            // as a field
             return $this->as;
         } else if ($this->using) {
+            // as a ->
             return $this->using;
         } else {
             trigger_error("Lost ->using()", E_USER_ERROR);

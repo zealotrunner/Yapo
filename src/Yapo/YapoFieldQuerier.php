@@ -17,55 +17,19 @@ class YapoFieldQuerier {
 
         if (!self::$operators) {
             self::$operators = array(
-                '='    => array(
-                    'where' => function($field, $value) {return array($field, '=', $value);},
-                    'php'   => function($field, $value) {return $field == $value;},
-                ),
-                '!='   => array(
-                    'where' => function($field, $value) {return array($field, '!=', $value);},
-                    'php'   => function($field, $value) {return $field != $value;},
-                ),
-                '<'    => array(
-                    'where' => function($field, $value) {return array($field, '<', $value);},
-                    'php'   => function($field, $value) {return $field < $value;},
-                ),
-                '<='   => array(
-                    'where' => function($field, $value) {return array($field, '<=', $value);},
-                    'php'   => function($field, $value) {return $field <= $value;},
-                ),
-                '>'    => array(
-                    'where' => function($field, $value, $model) {return array($field, '>', $value, $model);},
-                    'php'   => function($field, $value) {return $field > $value;},
-                ),
-                '>='   => array(
-                    'where' => function($field, $value) {return array($field, '>=', $value);},
-                    'php'   => function($field, $value) {return $field >= $value;},
-                ),
-                'IN'   => array(
-                    'where' => function($field, $value) {return array($field, 'IN', $value);},
-                    'php'   => function($field, $value) {return in_array($field, $value);},
-                ),
-                'IS'   => array(
-                    'where' => function($field, $value) {return array($field, 'IS', $value);},
-                    'php'   => function($field, $value) {return $field === $value;},
-                ),
-                'LIKE' => array(
-                    'where' => function($field, $value) {return array($field, 'LIKE', $value);},
-                    'php'   => function($field, $value) {return true; /* todo */}
-                ),
-                'ASC'  => array(
-                    'where' => function($field, $value) {return "$field ASC";},
-                ),
-                'DESC' => array(
-                    'where' => function($field, $value) {return "$field DESC";},
-                )
+                '='    => function($field, $value) {return YapoCondition::i($field, '=',    $value);},
+                '!='   => function($field, $value) {return YapoCondition::i($field, '!=',   $value);},
+                '<'    => function($field, $value) {return YapoCondition::i($field, '<',    $value);},
+                '<='   => function($field, $value) {return YapoCondition::i($field, '<=',   $value);},
+                '>'    => function($field, $value) {return YapoCondition::i($field, '>',    $value);},
+                '>='   => function($field, $value) {return YapoCondition::i($field, '>=',   $value);},
+                'IN'   => function($field, $value) {return YapoCondition::i($field, 'IN',   $value);},
+                'IS'   => function($field, $value) {return YapoCondition::i($field, 'IS',   $value);},
+                'LIKE' => function($field, $value) {return YapoCondition::i($field, 'LIKE', $value);},
+                'ASC'  => function($field, $value) {return "$field ASC";},
+                'DESC' => function($field, $value) {return "$field DESC";},
             );
         }
-    }
-
-    public function last($last) {
-        $this->last = $last;
-        return $this;
     }
 
     public function _($field_name) {
@@ -74,7 +38,7 @@ class YapoFieldQuerier {
             die;
         } else {
             $field = $model::fields($field_name);
-            return $field ? $field->querier($this->field->column()) : null;
+            return $field ? $field->querier($this) : null;
         }
     }
 
@@ -96,23 +60,47 @@ class YapoFieldQuerier {
     public function desc ()        { return $this->_set('DESC', '')->condition(); }
 
     public function condition() {
-        return call_user_func_array(self::$operators[$this->operator]['where'], array(
+
+        return call_user_func_array(self::$operators[$this->operator], array(
             $this->field->column(),
             $this->value,
-            $this->last
+            $this->last ? $this->last->field : null
         ));
     }
 
-    public function match($object) {
-        return call_user_func_array(self::$operators[$this->operator]['php'], array(
-            $object->{$this->field->name()},
-            $this->value
-        ));
+    public function sql() {
+        return $this->condition()->sql();
+    }
+
+    public function last($last) {
+        $this->last = $last;
+        return $this;
+    }
+
+    private function _build($operator, $value) {
+        // handle recursive subquery
+        if ($this->last) {
+            $model = $this->field->model();
+            $table = $model::table();
+
+            return $this->last->_build(
+                'IN',
+                 YapoCondition::i($this->field->column(), $operator, $value)
+                              ->select_from($table::instance()->pk(), $table::instance()->table())
+            );
+        } else {
+            return array($this->field, $operator, $value);
+        }
     }
 
     private function _set($operator, $value) {
-        $this->operator = $operator;
-        $this->value = $value;
+        if ($this->last) {
+            list($this->field, $this->operator, $this->value) = $this->_build($operator, $value);
+        } else {
+            $this->operator = $operator;
+            $this->value = $value;
+        }
+
         return $this;
     }
 

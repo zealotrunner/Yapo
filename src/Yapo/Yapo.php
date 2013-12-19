@@ -404,16 +404,6 @@ abstract class Yapo {
         return $modifications;
     }
 
-    private static function _column_of($field_name) {
-        if (!$f = self::fields($field_name)) return '';
-
-        if ($column = $f->column()) {
-            return $column;
-        }
-
-        return '';
-    }
-
     private static function _class() {
         return get_called_class();
     }
