@@ -3,6 +3,7 @@ Yapo
 
 Yet Another PHP ORM
 
+[![Build Status](https://travis-ci.org/zealotrunner/Yapo.png?branch=master)](https://travis-ci.org/zealotrunner/Yapo)
 
 Usage
 -----
