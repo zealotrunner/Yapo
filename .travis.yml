@@ -1,0 +1,16 @@
+
+language: php
+
+php:
+  - 5.4
+  - 5.3
+
+env:
+  - DB=sqlite
+
+install:
+  - curl -sS https://getcomposer.org/installer | php
+  - php composer.phar install --dev
+  - ./tests/generate_test_sqlite
+
+script: ./vendor/bin/phpunit tests/YapoTest.php
