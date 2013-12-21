@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Yapo : Yet Another PHP ORM" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Yapo</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/zealotrunner/Yapo">View on GitHub</a>
+
+          <h1 id="project_title">Yapo</h1>
+          <h2 id="project_tagline">Yet Another PHP ORM</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/zealotrunner/Yapo/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/zealotrunner/Yapo/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="yapo" class="anchor" href="#yapo"><span class="octicon octicon-link"></span></a>Yapo</h1>
+
+<p>Yet Another PHP ORM</p>
+
+<p><a href="https://travis-ci.org/zealotrunner/Yapo"><img src="https://travis-ci.org/zealotrunner/Yapo.png?branch=master" alt="Build Status"></a></p>
+
+<h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<div class="highlight highlight-php"><pre><span class="nv">$_</span> <span class="o">=</span> <span class="nx">Company</span><span class="o">::</span><span class="na">_</span><span class="p">();</span>
+
+
+<span class="nv">$company</span> <span class="o">=</span> <span class="nx">Company</span><span class="o">::</span><span class="na">get</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>        <span class="c1">// SELECT * FROM `company` WHERE `id` = 10</span>
+
+
+<span class="nv">$companies</span> <span class="o">=</span> <span class="nx">Company</span><span class="o">::</span><span class="na">filter</span><span class="p">(</span>       <span class="c1">// SELECT * FROM `company`</span>
+    <span class="nv">$_</span><span class="p">(</span><span class="s1">'name'</span><span class="p">)</span><span class="o">-&gt;</span><span class="na">like</span><span class="p">(</span><span class="s1">'%oo%'</span><span class="p">),</span>       <span class="c1">// WHERE ( `name` LIKE '%oo%'</span>
+    <span class="nv">$_</span><span class="p">(</span><span class="s1">'is_public'</span><span class="p">)</span><span class="o">-&gt;</span><span class="na">eq</span><span class="p">(</span><span class="k">true</span><span class="p">)</span>       <span class="c1">// AND `is_pubilc` = 1 )</span>
+<span class="p">)</span><span class="o">-&gt;</span><span class="na">or</span><span class="p">(</span>
+    <span class="nv">$_</span><span class="p">(</span><span class="s1">'employees'</span><span class="p">)</span><span class="o">-&gt;</span><span class="na">gt</span><span class="p">(</span><span class="s1">'10000'</span><span class="p">)</span>    <span class="c1">// OR ( `employees` &gt; 10000 )</span>
+<span class="p">);</span>
+
+
+<span class="k">foreach</span> <span class="p">(</span><span class="nv">$companies</span> <span class="k">as</span> <span class="nv">$company</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">echo</span> <span class="nv">$company</span><span class="o">-&gt;</span><span class="na">name</span><span class="p">;</span>
+    <span class="k">echo</span> <span class="nv">$company</span><span class="o">-&gt;</span><span class="na">ceo</span><span class="o">-&gt;</span><span class="na">name</span><span class="p">;</span>       <span class="c1">// SELECT * FROM `employee` WHERE </span>
+                                    <span class="c1">// `id` = {$company-&gt;ceo}</span>
+    <span class="k">echo</span> <span class="nv">$company</span><span class="o">-&gt;</span><span class="na">ceo</span><span class="o">-&gt;</span><span class="na">sex</span><span class="o">-&gt;</span><span class="na">text</span><span class="p">();</span>
+<span class="p">}</span>
+
+
+<span class="nv">$companies_ceo_born_after_1972</span> <span class="o">=</span> <span class="nx">Company</span><span class="o">::</span><span class="na">filter</span><span class="p">(</span>
+    <span class="nv">$_</span><span class="p">(</span><span class="s1">'ceo'</span><span class="p">)</span><span class="o">-&gt;</span><span class="na">_</span><span class="p">(</span><span class="s1">'born'</span><span class="p">)</span><span class="o">-&gt;</span><span class="na">gt</span><span class="p">(</span><span class="mi">1972</span><span class="p">)</span>
+
+    <span class="c1">// SELECT `id` FROM `company` WHERE ( `ceo_id` </span>
+    <span class="c1">//     IN (SELECT `id` FROM `employee` WHERE `born` &gt; '1972'))</span>
+<span class="p">);</span>
+
+</pre></div>
+
+<h2>
+<a name="model-definition" class="anchor" href="#model-definition"><span class="octicon octicon-link"></span></a>Model Definition</h2>
+
+<div class="highlight highlight-php"><pre><span class="k">class</span> <span class="nc">Company</span> <span class="k">extends</span> <span class="nx">Yapo\Yapo</span> <span class="p">{</span>
+
+    <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">table</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s1">'CompanyTable'</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">protected</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">define_fields</span><span class="p">(</span><span class="nv">$define</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="nv">$define</span><span class="p">(</span><span class="s1">'name'</span><span class="p">)</span>             <span class="o">-&gt;</span><span class="na">as</span><span class="p">(</span><span class="s1">'name'</span><span class="p">);</span> <span class="c1">// -&gt;of('CompanyTable');</span>
+
+        <span class="nv">$define</span><span class="p">(</span><span class="s1">'founded'</span><span class="p">)</span>          <span class="o">-&gt;</span><span class="na">as</span><span class="p">(</span><span class="s1">'founded'</span><span class="p">);</span> <span class="c1">// -&gt;of('CompanyTable');</span>
+
+        <span class="nv">$define</span><span class="p">(</span><span class="s1">'symbol'</span><span class="p">)</span>           <span class="o">-&gt;</span><span class="na">as</span><span class="p">(</span><span class="s1">'nasdaq_symbol'</span><span class="p">);</span> <span class="c1">// -&gt;of('CompanyTable');</span>
+
+        <span class="nv">$define</span><span class="p">(</span><span class="s1">'description'</span><span class="p">)</span>      <span class="o">-&gt;</span><span class="na">as</span><span class="p">(</span><span class="s1">'description'</span><span class="p">)</span><span class="o">-&gt;</span><span class="na">of</span><span class="p">(</span><span class="s1">'CompanyDetailTable'</span><span class="p">)</span>
+                                    <span class="o">-&gt;</span><span class="na">using</span><span class="p">(</span><span class="s1">'id'</span><span class="p">);</span>
+
+        <span class="nv">$define</span><span class="p">(</span><span class="s1">'ceo'</span><span class="p">)</span>              <span class="o">-&gt;</span><span class="na">as</span><span class="p">(</span><span class="s1">'Employee'</span><span class="p">)</span>
+                                    <span class="o">-&gt;</span><span class="na">using</span><span class="p">(</span><span class="s1">'ceo'</span><span class="p">);</span>
+
+        <span class="nv">$define</span><span class="p">(</span><span class="s1">'employees'</span><span class="p">)</span>        <span class="o">-&gt;</span><span class="na">as</span><span class="p">(</span><span class="s1">'Employee'</span><span class="p">)</span>
+                                    <span class="o">-&gt;</span><span class="na">with</span><span class="p">(</span><span class="s1">'company'</span><span class="p">);</span>
+
+        <span class="nv">$define</span><span class="p">(</span><span class="s1">'brief'</span><span class="p">)</span>            <span class="o">-&gt;</span><span class="na">as</span><span class="p">(</span><span class="k">function</span><span class="p">(</span><span class="nv">$c_row</span><span class="p">)</span> <span class="p">{</span>
+                                        <span class="k">return</span> <span class="s2">"</span><span class="si">{</span><span class="nv">$c_row</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span><span class="si">}</span><span class="s2">, founded in </span><span class="si">{</span><span class="nv">$c_row</span><span class="p">[</span><span class="s1">'founded'</span><span class="p">]</span><span class="si">}</span><span class="s2">."</span><span class="p">;</span>
+                                    <span class="p">});</span> <span class="c1">// -&gt;of('CompanyTable');</span>
+
+        <span class="nv">$define</span><span class="p">(</span><span class="s1">'special'</span><span class="p">)</span>          <span class="o">-&gt;</span><span class="na">as</span><span class="p">(</span><span class="s1">'special'</span><span class="p">)</span><span class="o">-&gt;</span><span class="na">switch</span><span class="p">(</span><span class="k">array</span><span class="p">(</span>
+                                        <span class="s1">'0'</span> <span class="o">=&gt;</span> <span class="s1">'Company'</span><span class="p">,</span>
+                                        <span class="s1">'1'</span> <span class="o">=&gt;</span> <span class="s1">'SpecialCompany'</span>
+                                    <span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="c1">// define instance methods</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">introduce</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">brief</span><span class="p">;</span>
+    <span class="p">}</span>
+
+<span class="p">}</span>
+
+<span class="cm">/*</span>
+<span class="cm"> * SpecialCompany is a submodel</span>
+<span class="cm"> */</span>
+<span class="k">class</span> <span class="nc">SpecialCompany</span> <span class="k">extends</span> <span class="nx">Company</span> <span class="p">{</span>
+
+    <span class="k">protected</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">define_fields</span><span class="p">(</span><span class="nv">$define</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// inherit all fields defined in Company</span>
+
+        <span class="nv">$define</span><span class="p">(</span><span class="s1">'why'</span><span class="p">)</span>          <span class="o">-&gt;</span><span class="na">as</span><span class="p">(</span><span class="s1">'why'</span><span class="p">)</span><span class="o">-&gt;</span><span class="na">of</span><span class="p">(</span><span class="s1">'SpecialCompanyTable'</span><span class="p">)</span>
+                                <span class="o">-&gt;</span><span class="na">using</span><span class="p">(</span><span class="s1">'id'</span><span class="p">);</span>
+
+    <span class="p">}</span>
+
+    <span class="c1">// overwrite Company::introduce()</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">introduce</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s2">"[</span><span class="si">{</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">why</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">brief</span><span class="si">}</span><span class="s2">"</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+<div class="highlight highlight-php"><pre><span class="k">class</span> <span class="nc">Employee</span> <span class="k">extends</span> <span class="nx">Yapo\Yapo</span> <span class="p">{</span>
+
+    <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">table</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s1">'EmployeeTable'</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">protected</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">define_fields</span><span class="p">(</span><span class="nv">$define</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="nv">$define</span><span class="p">(</span><span class="s1">'name'</span><span class="p">)</span>             <span class="o">-&gt;</span><span class="na">as</span><span class="p">(</span><span class="s1">'name'</span><span class="p">);</span>
+
+        <span class="nv">$define</span><span class="p">(</span><span class="s1">'sex'</span><span class="p">)</span>              <span class="o">-&gt;</span><span class="na">as</span><span class="p">(</span><span class="s1">'sex'</span><span class="p">)</span>
+                                    <span class="o">-&gt;</span><span class="na">enum</span><span class="p">(</span><span class="k">array</span><span class="p">(</span>
+                                        <span class="mi">0</span> <span class="o">=&gt;</span> <span class="s1">'?'</span><span class="p">,</span>
+                                        <span class="mi">1</span> <span class="o">=&gt;</span> <span class="s1">'Male'</span><span class="p">,</span>
+                                        <span class="mi">2</span> <span class="o">=&gt;</span> <span class="s1">'Female'</span>
+                                    <span class="p">));</span>
+
+        <span class="nv">$define</span><span class="p">(</span><span class="s1">'company'</span><span class="p">)</span>          <span class="o">-&gt;</span><span class="na">as</span><span class="p">(</span><span class="s1">'Company'</span><span class="p">)</span><span class="o">-&gt;</span><span class="na">using</span><span class="p">(</span><span class="s1">'company_id'</span><span class="p">);</span>
+    <span class="p">}</span>
+
+<span class="p">}</span>
+</pre></div>
+
+<div class="highlight highlight-php"><pre><span class="k">class</span> <span class="nc">CompanyTable</span> <span class="k">extends</span> <span class="nx">Yapo\YapoTable</span> <span class="p">{</span>
+
+    <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">master</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nx">Yapo\YapoConfig</span><span class="p">(</span>
+            <span class="nv">$dsn</span>      <span class="o">=</span> <span class="nx">TEST_DSN</span><span class="p">,</span>
+            <span class="nv">$user</span>     <span class="o">=</span> <span class="nx">TEST_USER</span><span class="p">,</span>
+            <span class="nv">$password</span> <span class="o">=</span> <span class="nx">TEST_PASS</span><span class="p">,</span>
+            <span class="nv">$table</span>    <span class="o">=</span> <span class="s1">'company'</span><span class="p">,</span>
+            <span class="nv">$pk</span>       <span class="o">=</span> <span class="s1">'id'</span>
+        <span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">CompanyDetailTable</span> <span class="k">extends</span> <span class="nx">Yapo\YapoTable</span> <span class="p">{</span>
+
+    <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">master</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nx">Yapo\YapoConfig</span><span class="p">(</span>
+            <span class="nv">$dsn</span>      <span class="o">=</span> <span class="nx">TEST_DSN</span><span class="p">,</span>
+            <span class="nv">$user</span>     <span class="o">=</span> <span class="nx">TEST_USER</span><span class="p">,</span>
+            <span class="nv">$password</span> <span class="o">=</span> <span class="nx">TEST_PASS</span><span class="p">,</span>
+            <span class="nv">$table</span>    <span class="o">=</span> <span class="s1">'company_detail'</span><span class="p">,</span>
+            <span class="nv">$pk</span>       <span class="o">=</span> <span class="s1">'id'</span>
+        <span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">SpecialCompanyTable</span> <span class="k">extends</span> <span class="nx">Yapo\YapoCachedTable</span> <span class="p">{</span>
+
+    <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">master</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nx">Yapo\YapoConfig</span><span class="p">(</span>
+            <span class="nv">$dsn</span>      <span class="o">=</span> <span class="nx">TEST_DSN</span><span class="p">,</span>
+            <span class="nv">$user</span>     <span class="o">=</span> <span class="nx">TEST_USER</span><span class="p">,</span>
+            <span class="nv">$password</span> <span class="o">=</span> <span class="nx">TEST_PASS</span><span class="p">,</span>
+            <span class="nv">$table</span>    <span class="o">=</span> <span class="s1">'special_company'</span><span class="p">,</span>
+            <span class="nv">$pk</span>       <span class="o">=</span> <span class="s1">'id'</span>
+        <span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">EmployeeTable</span> <span class="k">extends</span> <span class="nx">Yapo\YapoTable</span> <span class="p">{</span>
+
+    <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">master</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nx">Yapo\YapoConfig</span><span class="p">(</span>
+            <span class="nv">$dsn</span>      <span class="o">=</span> <span class="nx">TEST_DSN</span><span class="p">,</span>
+            <span class="nv">$user</span>     <span class="o">=</span> <span class="nx">TEST_USER</span><span class="p">,</span>
+            <span class="nv">$password</span> <span class="o">=</span> <span class="nx">TEST_PASS</span><span class="p">,</span>
+            <span class="nv">$table</span>    <span class="o">=</span> <span class="s1">'employee'</span><span class="p">,</span>
+            <span class="nv">$pk</span>       <span class="o">=</span> <span class="s1">'id'</span>
+        <span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</pre></div>
+
+<h2>
+<a name="test" class="anchor" href="#test"><span class="octicon octicon-link"></span></a>Test</h2>
+
+<p>Install <a href="https://github.com/composer/composer">Composer</a></p>
+
+<pre lang="shell"><code>cd yapo
+curl -sS https://getcomposer.org/installer | php
+php composer.phar install --dev
+</code></pre>
+
+<p>Prepare for testing</p>
+
+<pre lang="shell"><code>./tests/generate_test_sqlite
+</code></pre>
+
+<p>Test</p>
+
+<pre lang="shell"><code>./vendor/bin/phpunit tests/YapoTest.php
+</code></pre>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Yapo maintained by <a href="https://github.com/zealotrunner">zealotrunner</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
