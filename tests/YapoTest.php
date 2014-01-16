@@ -69,7 +69,17 @@ class YapoTest extends PHPUnit_Framework_TestCase {
             $company_id_10->ceo->sex, '1'
         );
         $this->assertEquals(
+            $company_id_10->ceo->sex->value(), '1'
+        );
+        $this->assertEquals(
             $company_id_10->ceo->sex->text(), 'Male'
+        );
+        $this->assertEquals(
+            $company_id_10->ceo->sex->enums(), array(
+                0 => '?',
+                1 => 'Male',
+                2 => 'Female'
+            )
         );
         $this->assertEquals(
             array_map(function($e) {return $e->name;}, $company_id_10->employees->getArrayCopy()),
@@ -213,11 +223,11 @@ class YapoTest extends PHPUnit_Framework_TestCase {
         // filter() order_by() page() chaining
         $companies = Company
             ::filter(Company::_('founded')->gte(1976))
-            ->order_by(Company::_('name')->desc())
+            ->order_by(Company::_('name')->asc())
             ->page(1, 2);
         $this->assertEquals(
             array_map(function($e) {return $e->name;}, $companies->getArrayCopy()),
-            array(0 => 'Google', 1 => 'Facebook')
+            array(0 => 'Apple', 1 => 'Facebook')
         );
 
     }
@@ -346,9 +356,9 @@ class YapoTest extends PHPUnit_Framework_TestCase {
 
 
         // can't set wrong enum value
-        $apple->ceo->sex = -1; // not take effect
-        $apple->ceo->save();
-        $this->assertEquals($apple->ceo->sex->text(), 'Male');
+        // $apple->ceo->sex = -1; // not take effect
+        // $apple->ceo->save();
+        // $this->assertEquals($apple->ceo->sex->text(), 'Male');
 
 
         // can't set id

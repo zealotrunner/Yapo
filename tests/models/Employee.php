@@ -20,6 +20,7 @@ class Employee extends Yapo\Yapo {
         $define('born')             ->as('born'); // ->of('EmployeeTable')
 
         $define('company')          ->as('Company')->using('company_id');
+
     }
 
     protected static function query($query) {

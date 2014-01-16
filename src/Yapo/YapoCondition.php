@@ -43,13 +43,13 @@ class YapoCondition {
     public function __call($func, $args) {
         switch ($func) {
             case 'and':
-                return call_user_func_array(array($this, 'aand'), $args);
             case 'or':
-                return call_user_func_array(array($this, 'oor'), $args);
             case 'empty':
-                return call_user_func_array(array($this, 'eempty'), $args);
             case 'false':
-                return call_user_func_array(array($this, 'ffalse'), $args);
+                // something => ssomething
+                $ffunc = str_pad($func, strlen($func) + 1, substr($func, 0, 1), STR_PAD_LEFT);
+                
+                return call_user_func_array(array($this, $ffunc), $args);
             default:
                 trigger_error("Call to undefined method " . __CLASS__ . "::$func()", E_USER_ERROR);
                 die;

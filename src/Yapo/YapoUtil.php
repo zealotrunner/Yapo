@@ -35,6 +35,13 @@ function every($page, $data, $func) {
     return $result;
 }
 
+function compose($f, $g) {
+  return function() use($f,$g) {
+    $x = func_get_args();
+    return $f(call_user_func_array($g, $x));
+  };
+}
+
 function is_assoc($a){
    return array_keys($a) !== range(0, count($a) - 1);
 }

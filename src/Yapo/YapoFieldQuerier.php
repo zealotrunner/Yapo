@@ -60,11 +60,10 @@ class YapoFieldQuerier {
     public function desc ()        { return $this->_set('DESC', '')->condition(); }
 
     public function condition() {
-
         return call_user_func_array(self::$operators[$this->operator], array(
             $this->field->column(),
             $this->value,
-            $this->last ? $this->last->field : null
+            $this->last_querier ? $this->last_querier->field : null
         ));
     }
 
@@ -72,18 +71,18 @@ class YapoFieldQuerier {
         return $this->condition()->sql();
     }
 
-    public function last($last) {
-        $this->last = $last;
+    public function after($last_querier) {
+        $this->last_querier = $last_querier;
         return $this;
     }
 
     private function _build($operator, $value) {
         // handle recursive subquery
-        if ($this->last) {
+        if ($this->last_querier) {
             $model = $this->field->model();
             $table = $model::table();
 
-            return $this->last->_build(
+            return $this->last_querier->_build(
                 'IN',
                  YapoCondition::i($this->field->column(), $operator, $value)
                               ->select_from($table::instance()->pk(), $table::instance()->table())
@@ -94,7 +93,7 @@ class YapoFieldQuerier {
     }
 
     private function _set($operator, $value) {
-        if ($this->last) {
+        if ($this->last_querier) {
             list($this->field, $this->operator, $this->value) = $this->_build($operator, $value);
         } else {
             $this->operator = $operator;

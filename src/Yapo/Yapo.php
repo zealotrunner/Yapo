@@ -337,8 +337,8 @@ abstract class Yapo {
 
     private static function real_class($row) {
         foreach (static::fields() as $f) {
-            if ($class = $f->fork($row)) {
-                return $class;
+            if ($real_class = $f->fork($row)) {
+                return $real_class;
             }
         }
 
@@ -363,10 +363,6 @@ abstract class Yapo {
             if (is_array($data)) {
                 if ($class) {
                     $result = new $class($data);
-                    // if ($class == 'SpecialCompany') {
-                    //     debug('new ' . $class);
-                    //     debug($result);
-                    // }
                 } else {
                     foreach ($data as $k => $v) {
                         $result[$k] = $wrap($v, $class);
@@ -428,7 +424,7 @@ abstract class Yapo {
     public function _eva($field, $row, $rows) {
          foreach (self::fields() as $f) {
             // fill all simple fields in all siblings
-            if ((!$field && $f->simple()) || ($field && $f)) {
+            if ($field || $f->simple()) {
                 $this->data[$f->name()] = $f->eva($row, $rows);
             }
         }
@@ -438,8 +434,6 @@ abstract class Yapo {
         $this->dirty_data = array();
         $this->siblings->_clean_up();
     }
-
-    /*abstract*/ public static function table() {}
 
     /*abstract*/ protected static function define_fields($define_function) {}
 }

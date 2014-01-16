@@ -66,8 +66,8 @@ class Company extends Yapo\Yapo {
         $define('employees')        ->as('Employee')
                                     ->with('company');
 
-        $define('brief')            ->as(function($c_row) {
-                                        return "{$c_row['name']}, founded in {$c_row['founded']}.";
+        $define('brief')            ->as(function($row) {
+                                        return "{$row['name']}, founded in {$row['founded']}.";
                                     }); // ->of('CompanyTable');
 
         $define('special')          ->as('special')->switch(array(
@@ -181,6 +181,60 @@ class EmployeeTable extends Yapo\YapoTable {
 }
 
 ```
+
+
+---
+
+1. simple fields
+
+        $define('symbol')       ->as('n_symbol');
+
+            Company
+        ---------------
+        |             |
+        |  *n_symbol* |
+        |             |
+        ---------------
+
+2.
+
+        //
+        $define('ceo')          ->as('Employee')
+                                ->using('ceo_id');
+
+            Company           *Employee*
+        ---------------     --------------
+        |             |     |            |
+        |    ceo_id   | - > |            |
+        |             |     |            |
+        ---------------     --------------
+
+        //
+        $define('employees')    ->as('Employee')
+                                ->with('company');
+
+            Company           *Employee*
+        ---------------     --------------
+        |             |     |            |
+        |             | < - |  company   |
+        |             |     |            |
+        ---------------     --------------
+
+3. 
+
+        //
+        $define('description')  ->as('description')
+                                ->of('CompanyDetailTable')
+                                ->using('id');
+
+           Company           CompanyDetailTable
+        ---------------     -------------------
+        |             |     |                 |
+        |     id      | - > |  *description*  |
+        |             |     |                 |
+        ---------------     -------------------
+
+        // ...
 
 Test
 ----
