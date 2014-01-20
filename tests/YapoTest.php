@@ -23,7 +23,7 @@ class YapoTest extends PHPUnit_Framework_TestCase {
             Company::_('ceo')->_('born')->gt(1972)
         );
         $this->assertEquals(
-            array_map(function($e) {return $e->name;}, $companies_ceo_born_after_1972->getArrayCopy()),
+            pluck($companies_ceo_born_after_1972->getArrayCopy(), 'name'),
             array(0 => 'Google', 1 => 'Facebook')
         );
 
@@ -42,7 +42,7 @@ class YapoTest extends PHPUnit_Framework_TestCase {
             Company::_('ceo')->_('company')->_('founded')->lt(1998)
         );
         $this->assertEquals(
-            array_map(function($e) {return $e->name;}, $companies_founded_before_1998->getArrayCopy()),
+            pluck($companies_founded_before_1998->getArrayCopy(), 'name'),
             array(0 => 'Apple', 1 => 'Microsoft')
         );
 
@@ -82,7 +82,7 @@ class YapoTest extends PHPUnit_Framework_TestCase {
             )
         );
         $this->assertEquals(
-            array_map(function($e) {return $e->name;}, $company_id_10->employees->getArrayCopy()),
+            pluck($company_id_10->employees->getArrayCopy(), 'name'),
             array(0 => 'Steve Jobs', 1 => 'Steve Wozniak')
         );
         $this->assertEquals(
@@ -98,7 +98,7 @@ class YapoTest extends PHPUnit_Framework_TestCase {
         $companies_id_10_11 = Company::get(array(10, 11));
         $this->assertEquals(count($companies_id_10_11), 2);
         $this->assertEquals(
-            array_map(function($e) {return $e->name;}, $companies_id_10_11),
+            pluck($companies_id_10_11, 'name'),
             array(10 => 'Apple', 11 => 'Google')
         );
         $this->assertInstanceOf   ('Company',        $companies_id_10_11[10]);
@@ -115,7 +115,7 @@ class YapoTest extends PHPUnit_Framework_TestCase {
         // get, some empty ids
         $companies_id_11_42 = Company::get(array(11, 42));
         $this->assertEquals(
-            array_map(function($e) {return $e->name;}, $companies_id_11_42),
+            pluck($companies_id_11_42, 'name'),
             array(11 => 'Google')
         );
 
@@ -150,7 +150,7 @@ class YapoTest extends PHPUnit_Framework_TestCase {
             $_('name')->like('%le')
         );
         $this->assertEquals(
-            array_map(function($e) {return $e->name;}, $companies_name_like_le->getArrayCopy()),
+            pluck($companies_name_like_le->getArrayCopy(), 'name'),
             array(0 => 'Apple', 1 => 'Google')
         );
 
@@ -161,7 +161,7 @@ class YapoTest extends PHPUnit_Framework_TestCase {
             $_('founded')->gt('1980')
         );
         $this->assertEquals(
-            array_map(function($e) {return $e->name;}, $companies_name_like_le_and_founded_gt_1980->getArrayCopy()),
+            pluck($companies_name_like_le_and_founded_gt_1980->getArrayCopy(), 'name'),
             array(0 => 'Google')
         );
 
@@ -173,7 +173,7 @@ class YapoTest extends PHPUnit_Framework_TestCase {
             $_('name')->eq('Google')
         );
         $this->assertEquals(
-            array_map(function($e) {return $e->name;}, $companies_name_apple_or_google->getArrayCopy()),
+            pluck($companies_name_apple_or_google->getArrayCopy(), 'name'),
             array(0 => 'Apple', 1 => 'Google')
         );
 
@@ -183,7 +183,7 @@ class YapoTest extends PHPUnit_Framework_TestCase {
         $name_google = Company::filter($_('name')->eq('Google'));
         $companies_name_apple_or_google = $name_apple->union($name_google);
         $this->assertEquals(
-            array_map(function($e) {return $e->name;}, $companies_name_apple_or_google->getArrayCopy()),
+            pluck($companies_name_apple_or_google->getArrayCopy(), 'name'),
             array(0 => 'Apple', 1 => 'Google')
         );
 
@@ -199,7 +199,7 @@ class YapoTest extends PHPUnit_Framework_TestCase {
             Company::_('founded')->desc()
         );
         $this->assertEquals(
-            array_map(function($e) {return $e->name;}, $companies->getArrayCopy()),
+            pluck($companies->getArrayCopy(), 'name'),
             array(0 => 'Facebook', 1 => 'Google', 2 => 'Apple', 3 => 'Microsoft')
         );
 
@@ -211,7 +211,7 @@ class YapoTest extends PHPUnit_Framework_TestCase {
         // page
         $companies_page_1_per_3 = Company::page(1, $per_page = 3);
         $this->assertEquals(
-            array_map(function($e) {return $e->name;}, $companies_page_1_per_3->getArrayCopy()),
+            pluck($companies_page_1_per_3->getArrayCopy(), 'name'),
             array(0 => 'Apple', 1 => 'Google', 2 => 'Microsoft')
         );
         // count() and total()
@@ -226,7 +226,7 @@ class YapoTest extends PHPUnit_Framework_TestCase {
             ->order_by(Company::_('name')->asc())
             ->page(1, 2);
         $this->assertEquals(
-            array_map(function($e) {return $e->name;}, $companies->getArrayCopy()),
+            pluck($companies->getArrayCopy(), 'name'),
             array(0 => 'Apple', 1 => 'Facebook')
         );
 
@@ -350,7 +350,7 @@ class YapoTest extends PHPUnit_Framework_TestCase {
         $apple->employees[] = Employee::get(23); // not take effect
         $apple->save();
         $this->assertEquals(
-            array_map(function($e) {return $e->name;}, $apple->employees->getArrayCopy()),
+            pluck($apple->employees->getArrayCopy(), 'name'),
             array(0 => 'Steve Jobs', 1 => 'Steve Wozniak')
         );
 

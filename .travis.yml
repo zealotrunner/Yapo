@@ -16,11 +16,16 @@ branches:
 
 install:
   - curl -sS https://getcomposer.org/installer | php
-  - php composer.phar install --dev
+  - php composer.phar install --dev --no-interaction
 
 before_script:
   - ./tests/generate_test_sqlite
   - mysql -e 'create database yapo_test;'
   - mysql -u travis yapo_test < 'tests/test.dump'
 
-script: ./vendor/bin/phpunit tests/YapoTest.php
+script: 
+  - mkdir -p build/logs
+  - ./vendor/bin/phpunit --coverage-clover build/logs/clover.xml tests/YapoTest.php
+
+after_script:
+  - ./vendor/bin/coveralls -v
