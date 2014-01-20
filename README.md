@@ -4,6 +4,7 @@ Yapo
 Yet Another PHP ORM
 
 [![Build Status](https://travis-ci.org/zealotrunner/Yapo.png?branch=master)](https://travis-ci.org/zealotrunner/Yapo)
+[![Coverage Status](https://coveralls.io/repos/zealotrunner/Yapo/badge.png)](https://coveralls.io/r/zealotrunner/Yapo)
 [![PHP version](https://badge.fury.io/ph/yapo%2Fyapo.png)](http://badge.fury.io/ph/yapo%2Fyapo)
 
 Usage
