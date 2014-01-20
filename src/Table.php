@@ -2,15 +2,20 @@
 
 namespace Yapo;
 
-abstract class YapoTable implements YapoInterfaceTable {
+abstract class Table implements InterfaceTable {
 
     protected $configs;
+
+    private static $instances = array();
 
     private $pdo;
 
     public static function instance() {
         $class  = get_called_class();
-        return new $class();
+        if (empty(self::$instances[$class])) {
+            self::$instances[$class] = new $class();
+        }
+        return self::$instances[$class];
     }
 
     public function __construct() {

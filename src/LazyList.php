@@ -2,7 +2,7 @@
 
 namespace Yapo;
 
-class YapoLazyList extends \ArrayObject {
+class LazyList extends \ArrayObject {
 
     private $table = null;
 
@@ -11,13 +11,13 @@ class YapoLazyList extends \ArrayObject {
     private $condition = null;
     private $orders = array();
     private $page = 1;
-    private $page_size = 500;
+    private $page_size = 502;
 
     public function __construct($table) {
         parent::__construct();
 
         $this->table = $table;
-        $this->condition = YapoCondition::i();
+        $this->condition = Condition::i();
     }
 
     public function filter($queriers = array()) {return $this->aand($queriers);}

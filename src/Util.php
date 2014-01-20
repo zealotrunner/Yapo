@@ -22,7 +22,7 @@ function every($page, $data, $func) {
     $result = array();
     for ($i = 0; $i < count($data); $i += $page) {
         $x = call_user_func($func, array_slice($data, $i, $page, true));
-        if ($x instanceof YapoLazyList) {
+        if ($x instanceof LazyList) {
             $result =
                 $result
                     ? $result->union($x)

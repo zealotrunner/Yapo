@@ -2,7 +2,7 @@
 
 namespace Yapo;
 
-class YapoFieldDefiner {
+class FieldDefiner {
 
     private $name;
     private $model;
@@ -14,7 +14,7 @@ class YapoFieldDefiner {
     public function __construct($name, $model) {
         $this->name = $name;
         $this->model = $model;
-        $this->builder = new YapoFieldDefinerBuilder();
+        $this->builder = new FieldDefinerBuilder();
     }
 
     public function done() {
@@ -26,7 +26,7 @@ class YapoFieldDefiner {
         // create field
         switch($this->field_type()) {
             case 'A':
-                $field_class = __NAMESPACE__ . '\YapoFieldSimple';
+                $field_class = __NAMESPACE__ . '\FieldSimple';
                 $column = is_string($this->builder->as) && !class_exists($this->builder->as)
                     ? $this->builder->as
                     : null;
@@ -37,7 +37,7 @@ class YapoFieldDefiner {
                     ->writer($this->builder->writer);
             case 'B':
                 if ($this->leaf()) {
-                    $field_class = __NAMESPACE__ . '\YapoFieldToOneColumn';
+                    $field_class = __NAMESPACE__ . '\FieldToOneColumn';
                     $column = $this->builder->using;
                     $opposite_table = $this->builder->of;
                     $opposite_column = $this->builder->as;
@@ -49,7 +49,7 @@ class YapoFieldDefiner {
                         ->switch($this->builder->switch)
                         ->writer($this->builder->writer);
                 } else {
-                    $field_class = __NAMESPACE__ . '\YapoFieldToOne';
+                    $field_class = __NAMESPACE__ . '\FieldToOne';
                     $column = $this->builder->using;
                     $opposite_model = $this->builder->as;
 
@@ -63,9 +63,9 @@ class YapoFieldDefiner {
                 if ($this->leaf()) {
                     // not implemented
                     $this->field = 'not implemented';
-                    // return  __NAMESPACE__ . '\YapoFieldToManyColumn';
+                    // return  __NAMESPACE__ . '\FieldToManyColumn';
                 } else {
-                    $field_class = __NAMESPACE__ . '\YapoFieldToMany';
+                    $field_class = __NAMESPACE__ . '\FieldToMany';
                     $opposite_model = $this->builder->as;
                     $opposite_field = $this->builder->with;
 
@@ -117,7 +117,7 @@ class YapoFieldDefiner {
 
         if ($enum = $this->builder->enum) {
             return compose(function($value) use ($enum) {
-                return new YapoEnum(
+                return new Enum(
                     $value,
                     $enum
                 );
@@ -146,7 +146,7 @@ class YapoFieldDefiner {
  *
  * (as)(of)?([using|with])*([enum|switch|if])*
  */
-class YapoFieldDefinerBuilder {
+class FieldDefinerBuilder {
 
     public $as = null;
     public $writer = null;

@@ -2,7 +2,7 @@
 
 namespace Yapo;
 
-class YapoConfig {
+class Config {
 
     private $dsn;
     private $user;

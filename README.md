@@ -244,6 +244,7 @@ Install [Composer](https://github.com/composer/composer)
 cd yapo
 curl -sS https://getcomposer.org/installer | php
 php composer.phar install --dev
+php composer.phar dumpautoload -o
 ```
 
 Prepare for testing

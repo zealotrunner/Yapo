@@ -2,7 +2,7 @@
 
 namespace Yapo;
 
-interface YapoInterfaceTable {
+interface InterfaceTable {
 
     public static function instance();
 

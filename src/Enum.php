@@ -2,7 +2,7 @@
 
 namespace Yapo;
 
-class YapoEnum {
+class Enum {
 
     private $value = null;
 

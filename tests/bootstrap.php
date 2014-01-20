@@ -3,8 +3,13 @@
 require 'vendor/autoload.php';
 error_reporting(E_ALL);
 
+define('TEST_PATH', realpath(dirname( __FILE__ )) . '/');
 
-// define('DEBUG_MODE', true);
-define('TEST_DSN', 'sqlite:' . __DIR__ .'/test.sqlite');
-define('TEST_USER', '');
-define('TEST_PASS', '');
+
+$db = getenv('DB') ?: 'mysql';
+$env = getenv('TRAVIS') == 'true' ? 'travis' : 'dev';
+$load = TEST_PATH . "envs/{$db}_{$env}.php";
+
+require $load;
+
+echo "ENV: $load" . PHP_EOL;

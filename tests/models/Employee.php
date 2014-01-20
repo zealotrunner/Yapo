@@ -38,10 +38,10 @@ class Employee extends Yapo\Yapo {
 
 }
 
-class EmployeeTable extends Yapo\YapoCachedTable {
+class EmployeeTable extends Yapo\CachedTable {
 
     public static function master() {
-        return new Yapo\YapoConfig(
+        return new Yapo\Config(
             $dsn      = TEST_DSN,
             $user     = TEST_USER,
             $password = TEST_PASS,

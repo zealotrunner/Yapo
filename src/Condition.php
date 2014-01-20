@@ -2,7 +2,7 @@
 
 namespace Yapo;
 
-class YapoCondition {
+class Condition {
 
     /**
      * array(
@@ -56,7 +56,7 @@ class YapoCondition {
         }
     }
 
-    public function copy(YapoCondition $condition) {
+    public function copy(Condition $condition) {
         $this->condition = $condition->condition;
         return $this;
     }
@@ -110,9 +110,9 @@ class YapoCondition {
                 // array(
                 //     'column' => '',
                 //     'op' => '',
-                //     'value' => ''|array()|YapoCondition,
+                //     'value' => ''|array()|Condition,
                 // )
-                if ($c['value'] instanceof YapoCondition) {
+                if ($c['value'] instanceof Condition) {
                     $subquery = $c['value'];
                     $value = "({$subquery->select_pk_sql()})";
                 } else if (is_array($c['value'])) {
@@ -153,7 +153,7 @@ class YapoCondition {
         $and_or = array_shift($args);
 
         $conditions = array_filter(array_map(function($a) {
-            if ($a instanceof YapoCondition) {
+            if ($a instanceof Condition) {
                 return $a->_v();
             } else {
                 return $a;

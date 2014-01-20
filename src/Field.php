@@ -2,7 +2,7 @@
 
 namespace Yapo;
 
-abstract class YapoField {
+abstract class Field {
 
     private static $fields = array();
     private static $definers = array();
@@ -12,7 +12,7 @@ abstract class YapoField {
     protected $attributes;
 
     public static function define($field, $model) {
-        $definer = new YapoFieldDefiner($field, $model);
+        $definer = new FieldDefiner($field, $model);
         static::$definers[] = $definer;
 
         return $definer->builder();
@@ -39,7 +39,7 @@ abstract class YapoField {
     }
 
     public function querier($last_querier = null) {
-        return i(new YapoFieldQuerier($this))->after($last_querier);
+        return i(new FieldQuerier($this))->after($last_querier);
     }
 
     public function name() {
@@ -108,15 +108,15 @@ abstract class YapoField {
 
 }
 
-class YapoFieldSimple extends YapoField {
+class FieldSimple extends Field {
 
     public function modifications($id, $value) {
         $model = $this->model();
         $table = $model::table();
 
         $where = $id
-             ? YapoCondition::i($table::instance()->pk(), '=', $id)
-             : YapoCondition::i();
+             ? Condition::i($table::instance()->pk(), '=', $id)
+             : Condition::i();
 
         $modification = $this->writer
             ? call_user_func_array($this->writer, array(array(), $value))
@@ -133,7 +133,7 @@ class YapoFieldSimple extends YapoField {
 
 }
 
-class YapoFieldToOne extends YapoField {
+class FieldToOne extends Field {
 
     protected function _eva($row, $sibling_rows) {
         $PAGE = 30;
@@ -161,9 +161,9 @@ class YapoFieldToOne extends YapoField {
         $table = $model::table();
 
         if ($id) {
-            $where = YapoCondition::i($table::instance()->pk(), '=', $id);
+            $where = Condition::i($table::instance()->pk(), '=', $id);
         } else {
-            $where = YapoCondition::i();
+            $where = Condition::i();
         }
 
         $modification = $this->writer
@@ -176,7 +176,7 @@ class YapoFieldToOne extends YapoField {
 
 }
 
-class YapoFieldToOneColumn extends YapoField {
+class FieldToOneColumn extends Field {
 
     protected function _eva($row, $sibling_rows) {
         $PAGE = 30;
@@ -190,12 +190,12 @@ class YapoFieldToOneColumn extends YapoField {
                     return $r[$column];
                 }, $rows);
 
-                return $of_table->select('*', YapoCondition::i($of_table->pk(), 'IN', $ids)->sql(), $of_table->pk() . ' DESC', 0, 10000);
+                return $of_table->select('*', Condition::i($of_table->pk(), 'IN', $ids)->sql(), $of_table->pk() . ' DESC', 0, 10000);
             });
 
             $value = $values[$row[$column]];
         } else {
-            $value = $of_table->select('*', YapoCondition::i($of_table->pk(), 'IN', $row[$column])->sql(), $of_table->pk() . ' DESC', 0, 10000);
+            $value = $of_table->select('*', Condition::i($of_table->pk(), 'IN', $row[$column])->sql(), $of_table->pk() . ' DESC', 0, 10000);
         }
 
         return $value;
@@ -205,11 +205,11 @@ class YapoFieldToOneColumn extends YapoField {
         $table = $this->opposite_table;
 
         if ($id) {
-            $where = YapoCondition::i($this->column, '=', $id);
+            $where = Condition::i($this->column, '=', $id);
             $modification = array($this->opposite_column => $value);
         } else {
             $id = 'LAST_INSERT_ID';
-            $where = YapoCondition::i();
+            $where = Condition::i();
             $id_modification = array($this->column => $id);
             $modification = array_merge($id_modification, array($this->opposite_column => $value));
         }
@@ -221,7 +221,7 @@ class YapoFieldToOneColumn extends YapoField {
 
 }
 
-class YapoFieldToMany extends YapoField {
+class FieldToMany extends Field {
 
     protected function _eva($row, $sibling_rows) {
         $PAGE = 30;
@@ -260,9 +260,9 @@ class YapoFieldToMany extends YapoField {
         $table = $model::table();
 
         if ($id) {
-            $where = YapoCondition::i($table::instance()->pk(), '=', $id);
+            $where = Condition::i($table::instance()->pk(), '=', $id);
         } else {
-            $where = YapoCondition::i();
+            $where = Condition::i();
         }
 
         $modification = $this->writer
@@ -275,7 +275,7 @@ class YapoFieldToMany extends YapoField {
     public function simple() {return false;}
 }
 
-class YapoFieldToManyColumn extends YapoField {
+class FieldToManyColumn extends Field {
 
     protected function _eva($row, $sibling_rows) {
         // not yet implemented

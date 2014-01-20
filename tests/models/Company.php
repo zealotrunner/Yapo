@@ -59,10 +59,10 @@ class SpecialCompany extends Company {
     }
 }
 
-class CompanyTable extends Yapo\YapoCachedTable {
+class CompanyTable extends Yapo\CachedTable {
 
     public static function master() {
-        return new Yapo\YapoConfig(
+        return new Yapo\Config(
             $dsn      = TEST_DSN,
             $user     = TEST_USER,
             $password = TEST_PASS,
@@ -72,10 +72,10 @@ class CompanyTable extends Yapo\YapoCachedTable {
     }
 }
 
-class CompanyDetailTable extends Yapo\YapoCachedTable {
+class CompanyDetailTable extends Yapo\CachedTable {
 
     public static function master() {
-        return new Yapo\YapoConfig(
+        return new Yapo\Config(
             $dsn      = TEST_DSN,
             $user     = TEST_USER,
             $password = TEST_PASS,
@@ -85,10 +85,10 @@ class CompanyDetailTable extends Yapo\YapoCachedTable {
     }
 }
 
-class SpecialCompanyTable extends Yapo\YapoCachedTable {
+class SpecialCompanyTable extends Yapo\CachedTable {
 
     public static function master() {
-        return new Yapo\YapoConfig(
+        return new Yapo\Config(
             $dsn      = TEST_DSN,
             $user     = TEST_USER,
             $password = TEST_PASS,
@@ -98,10 +98,10 @@ class SpecialCompanyTable extends Yapo\YapoCachedTable {
     }
 }
 
-// class CompanyQueryTable extends Yapo\YapoCachedTable {
+// class CompanyQueryTable extends Yapo\CachedTable {
 
 //     public static function master() {
-//         return new Yapo\YapoConfig(
+//         return new Yapo\Config(
 //             $dsn      = TEST_DSN,
 //             $user     = TEST_USER,
 //             $password = TEST_PASS,

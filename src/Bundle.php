@@ -2,7 +2,7 @@
 
 namespace Yapo;
 
-class YapoBundle {
+class Bundle {
 
     private $table;
     private $objects = array();
@@ -27,7 +27,7 @@ class YapoBundle {
         $table = $this->table;
 
         $this->rows = every(30, $this->objects, function($object) use ($table) {
-            return $table->select('*', YapoCondition::i($table->pk(), 'IN', array_map(function($o) {
+            return $table->select('*', Condition::i($table->pk(), 'IN', array_map(function($o) {
                return $o->id;
             }, $object))->sql(), '`id` DESC', 0, 10000);
         });

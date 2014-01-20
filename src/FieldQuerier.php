@@ -2,7 +2,7 @@
 
 namespace Yapo;
 
-class YapoFieldQuerier {
+class FieldQuerier {
 
     private $field;
     private $operator;
@@ -17,15 +17,15 @@ class YapoFieldQuerier {
 
         if (!self::$operators) {
             self::$operators = array(
-                '='    => function($field, $value) {return YapoCondition::i($field, '=',    $value);},
-                '!='   => function($field, $value) {return YapoCondition::i($field, '!=',   $value);},
-                '<'    => function($field, $value) {return YapoCondition::i($field, '<',    $value);},
-                '<='   => function($field, $value) {return YapoCondition::i($field, '<=',   $value);},
-                '>'    => function($field, $value) {return YapoCondition::i($field, '>',    $value);},
-                '>='   => function($field, $value) {return YapoCondition::i($field, '>=',   $value);},
-                'IN'   => function($field, $value) {return YapoCondition::i($field, 'IN',   $value);},
-                'IS'   => function($field, $value) {return YapoCondition::i($field, 'IS',   $value);},
-                'LIKE' => function($field, $value) {return YapoCondition::i($field, 'LIKE', $value);},
+                '='    => function($field, $value) {return Condition::i($field, '=',    $value);},
+                '!='   => function($field, $value) {return Condition::i($field, '!=',   $value);},
+                '<'    => function($field, $value) {return Condition::i($field, '<',    $value);},
+                '<='   => function($field, $value) {return Condition::i($field, '<=',   $value);},
+                '>'    => function($field, $value) {return Condition::i($field, '>',    $value);},
+                '>='   => function($field, $value) {return Condition::i($field, '>=',   $value);},
+                'IN'   => function($field, $value) {return Condition::i($field, 'IN',   $value);},
+                'IS'   => function($field, $value) {return Condition::i($field, 'IS',   $value);},
+                'LIKE' => function($field, $value) {return Condition::i($field, 'LIKE', $value);},
                 'ASC'  => function($field, $value) {return "$field ASC";},
                 'DESC' => function($field, $value) {return "$field DESC";},
             );
@@ -84,7 +84,7 @@ class YapoFieldQuerier {
 
             return $this->last_querier->_build(
                 'IN',
-                 YapoCondition::i($this->field->column(), $operator, $value)
+                 Condition::i($this->field->column(), $operator, $value)
                               ->select_from($table::instance()->pk(), $table::instance()->table())
             );
         } else {

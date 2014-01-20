@@ -2,7 +2,7 @@
 
 namespace Yapo;
 
-class YapoMemory {
+class Memory {
 
     static private $instances = array();
 

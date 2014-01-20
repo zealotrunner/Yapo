@@ -2,7 +2,7 @@
 
 namespace Yapo;
 
-require_once(dirname(__FILE__) . '/YapoUtil.php');
+require_once(dirname(__FILE__) . '/Util.php');
 
 /**
  * Yapo
@@ -20,7 +20,7 @@ abstract class Yapo {
     private $dirty_data = array();
 
     /*
-     * YapoBundle
+     * Bundle
      */
     public $siblings = null;
 
@@ -28,7 +28,7 @@ abstract class Yapo {
         $this->data = $data;
         $this->dirty_data = $data;
 
-        $this->siblings = new YapoBundle(self::_table());
+        $this->siblings = new Bundle(self::_table());
     }
 
     /**
@@ -75,7 +75,7 @@ abstract class Yapo {
     public static function get($id_or_ids) {
         $self_class = static::_class();
         // memory cache
-        $cache = YapoMemory::s($self_class)->get($id_or_ids);
+        $cache = Memory::s($self_class)->get($id_or_ids);
         if ($cache) return $cache;
 
         if (is_array($id_or_ids)) {
@@ -87,7 +87,7 @@ abstract class Yapo {
             $result = empty($filled_up->id) ? null : $filled_up;
         }
 
-        YapoMemory::s($self_class)->set($id_or_ids, $result);
+        Memory::s($self_class)->set($id_or_ids, $result);
 
         return $result;
     }
@@ -102,7 +102,7 @@ abstract class Yapo {
      * ::page()
      */
     public static function filter(/*conditions*/) {
-        return i(new YapoLazyList(static::_class()))
+        return i(new LazyList(static::_class()))
             ->filter(func_get_args());
     }
 
@@ -113,19 +113,19 @@ abstract class Yapo {
 
         $orders = array_reduce($orders, 'array_merge', array());
 
-        return i(new YapoLazyList(static::_class()))
+        return i(new LazyList(static::_class()))
             ->order_by($orders);
     }
 
     public static function page($page, $page_size) {
-        return i(new YapoLazyList(static::_class()))
+        return i(new LazyList(static::_class()))
             ->page($page, $page_size);
     }
 
     /**
      *
      */
-    public static function _find(YapoCondition $condition, $order = array(), $page = 1, $page_size = 500) {
+    public static function _find(Condition $condition, $order = array(), $page = 1, $page_size = 500) {
         $pk = static::_table()->pk();
 
         $rows = static::_table()->select(
@@ -217,12 +217,12 @@ abstract class Yapo {
 
         // $result = static::_table()->delete($where = '`' . static::_table()->pk() . '` = ' . $this->data['id']);
         $result = static::_table()->delete(
-            YapoCondition::i(static::_table()->pk(), '=', $this->data['id'])->sql()
+            Condition::i(static::_table()->pk(), '=', $this->data['id'])->sql()
         );
 
         if ($result) {
             // clear memory cache after removing
-            YapoMemory::s(self::_class())->truncate();
+            Memory::s(self::_class())->truncate();
 
             // todo
             // remove extend tables
@@ -262,15 +262,15 @@ abstract class Yapo {
             // subclasses will define the fields
             foreach ($chain as $c) {
                 $c::define_fields(function($field) use ($class) {
-                    return YapoField::define($field, $class);
+                    return Field::define($field, $class);
                 });
             }
 
             // the 'id' field must be defined
-            YapoField::define('id', $class)
+            Field::define('id', $class)
                 ->as(static::_table()->pk());
 
-            $fields[$class] = YapoField::defined($class);
+            $fields[$class] = Field::defined($class);
         }
 
         return $field_name
@@ -288,13 +288,13 @@ abstract class Yapo {
     public static function _($field_name = null) {
         if ($field_name) {
             /*
-             * {YapoModel}::_('field_name');
+             * {Model}::_('field_name');
              */
             $field = static::fields($field_name); // 5.4 Only variables should be passed by reference
             return $field ? $field->querier() : null;
         } else {
             /*
-             * $_ = {YapoModel}::_();
+             * $_ = {Model}::_();
              */
             $self_class = static::_class();
             return function($field) use ($self_class) {
@@ -306,13 +306,13 @@ abstract class Yapo {
     private static function _modelize_and_fill_up($ids) {
         $rows = static::_table()->select(
             '*',
-            YapoCondition::i(static::_table()->pk(), 'IN', $ids)->sql(),
+            Condition::i(static::_table()->pk(), 'IN', $ids)->sql(),
             '',
             0,
             count($ids)
         );
 
-        $bundle = new YapoBundle(static::_table());
+        $bundle = new Bundle(static::_table());
         $modelizeds = array();
         foreach ($ids as $id) {
             if (empty($rows[$id])) continue;
