@@ -3,9 +3,11 @@ Yapo
 
 Yet Another PHP ORM
 
+[![Latest Stable Version](https://poser.pugx.org/yapo/yapo/v/stable.png)](https://packagist.org/packages/yapo/yapo)
 [![Build Status](https://travis-ci.org/zealotrunner/Yapo.png?branch=master)](https://travis-ci.org/zealotrunner/Yapo)
 [![Coverage Status](https://coveralls.io/repos/zealotrunner/Yapo/badge.png)](https://coveralls.io/r/zealotrunner/Yapo)
-[![PHP version](https://badge.fury.io/ph/yapo%2Fyapo.png)](http://badge.fury.io/ph/yapo%2Fyapo)
+[![License](https://poser.pugx.org/yapo/yapo/license.png)](https://packagist.org/packages/yapo/yapo)
+
 
 Usage
 -----
@@ -187,7 +189,7 @@ class EmployeeTable extends Yapo\YapoTable {
 
 ---
 
-1. simple fields
+1. local fields
 
         $define('symbol')       ->as('n_symbol');
 
@@ -198,7 +200,7 @@ class EmployeeTable extends Yapo\YapoTable {
         |             |
         ---------------
 
-2.
+2. another model as a field
 
         //
         $define('ceo')          ->as('Employee')
@@ -222,7 +224,7 @@ class EmployeeTable extends Yapo\YapoTable {
         |             |     |            |
         ---------------     --------------
 
-3. 
+3. another column as a field
 
         //
         $define('description')  ->as('description')
