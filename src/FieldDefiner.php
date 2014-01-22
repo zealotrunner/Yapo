@@ -212,8 +212,10 @@ class FieldDefinerBuilder {
                 return call_user_func_array(array($this, $ffunc), $args);
                 break;
             default:
+                // @codeCoverageIgnoreStart
                 trigger_error("Call to undefined method " . __CLASS__ . "::$func()", E_USER_ERROR);
                 die;
+                // @codeCoverageIgnoreEnd
         }
     }
 

@@ -51,9 +51,12 @@ class Condition {
                 
                 return call_user_func_array(array($this, $ffunc), $args);
             default:
+                // @codeCoverageIgnoreStart
                 trigger_error("Call to undefined method " . __CLASS__ . "::$func()", E_USER_ERROR);
                 die;
+                // @codeCoverageIgnoreEnd
         }
+
     }
 
     public function copy(Condition $condition) {

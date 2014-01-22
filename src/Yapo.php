@@ -176,7 +176,7 @@ abstract class Yapo {
             // TODO ugly
             // replace into? or  http://stackoverflow.com/questions/2930378/mysql-replace-into-alternative
             $exists = !$w->empty()
-                ? $table->select('*', $w->sql(), '`id` DESC', 0, 10000)
+                ? $table->select('*', $w->sql(), '`id` DESC', 0, 0)
                 : false;
 
             if ($exists) {
@@ -232,10 +232,6 @@ abstract class Yapo {
         }
 
         return $result;
-    }
-
-    public function match($condition) {
-        return $condition->match($this);
     }
 
     public static function fields($field_name = '') {

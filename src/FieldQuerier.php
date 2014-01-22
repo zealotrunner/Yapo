@@ -34,8 +34,10 @@ class FieldQuerier {
 
     public function _($field_name) {
         if (!$model = $this->field->pointed_model()) {
+            // @codeCoverageIgnoreStart
             trigger_error("Call to undefined method " . __CLASS__ . "::_()", E_USER_ERROR);
             die;
+            // @codeCoverageIgnoreEnd
         } else {
             $field = $model::fields($field_name);
             return $field ? $field->querier($this) : null;

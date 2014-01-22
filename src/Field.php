@@ -185,17 +185,17 @@ class FieldToOneColumn extends Field {
         $of_table_name = $this->opposite_table;
         $of_table = $of_table_name::instance();
         if ($sibling_rows) {
-            $values = every($PAGE, $sibling_rows, function($rows) use ($column, $of_table) {
+            $values = every($PAGE, $sibling_rows, function($rows) use ($column, $of_table, $PAGE) {
                 $ids = array_map(function($r) use ($column) {
                     return $r[$column];
                 }, $rows);
 
-                return $of_table->select('*', Condition::i($of_table->pk(), 'IN', $ids)->sql(), $of_table->pk() . ' DESC', 0, 10000);
+                return $of_table->select('*', Condition::i($of_table->pk(), 'IN', $ids)->sql(), $of_table->pk() . ' DESC', 0, $PAGE);
             });
 
             $value = $values[$row[$column]];
         } else {
-            $value = $of_table->select('*', Condition::i($of_table->pk(), 'IN', $row[$column])->sql(), $of_table->pk() . ' DESC', 0, 10000);
+            $value = $of_table->select('*', Condition::i($of_table->pk(), 'IN', $row[$column])->sql(), $of_table->pk() . ' DESC', 0, 0);
         }
 
         return $value;
@@ -255,21 +255,12 @@ class FieldToMany extends Field {
         return $value;
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function modifications($id, $value) {
-        $model = $this->model();
-        $table = $model::table();
-
-        if ($id) {
-            $where = Condition::i($table::instance()->pk(), '=', $id);
-        } else {
-            $where = Condition::i();
-        }
-
-        $modification = $this->writer
-            ? call_user_func_array($this->writer, array(array(), $value))
-            : array($this->column => $value);
-
-        return array($table, $where, $modification);
+        // the FieldToMany cannot be modified
+        return;
     }
 
     public function simple() {return false;}

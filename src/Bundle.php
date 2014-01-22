@@ -12,10 +12,6 @@ class Bundle {
         $this->table = $table;
     }
 
-    public function get() {
-        return $this->objects;
-    }
-
     public function add($o) {
         $this->objects[] = &$o;
     }
@@ -26,10 +22,10 @@ class Bundle {
 
         $table = $this->table;
 
-        $this->rows = every(30, $this->objects, function($object) use ($table) {
+        $this->rows = every(30, $this->objects, function($objects) use ($table) {
             return $table->select('*', Condition::i($table->pk(), 'IN', array_map(function($o) {
                return $o->id;
-            }, $object))->sql(), '`id` DESC', 0, 10000);
+            }, $objects))->sql(), '`id` DESC', 0, 30);
         });
     }
 

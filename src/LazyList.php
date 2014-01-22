@@ -6,12 +6,12 @@ class LazyList extends \ArrayObject {
 
     private $table = null;
 
-    private $loaded = false;
+    private $loaded = 0;
 
     private $condition = null;
     private $orders = array();
     private $page = 1;
-    private $page_size = 502;
+    private $page_size = 0;
 
     public function __construct($table) {
         parent::__construct();
@@ -30,7 +30,7 @@ class LazyList extends \ArrayObject {
             $this->condition->false();
         }
 
-        $this->loaded = false;
+        $this->_unload();
         return $this;
     }
 
@@ -43,7 +43,7 @@ class LazyList extends \ArrayObject {
             $this->condition->false();
         }
 
-        $this->loaded = false;
+        $this->_unload();
         return $this;
     }
 
@@ -54,7 +54,7 @@ class LazyList extends \ArrayObject {
             $this->orders[] = $order_or_orders;
         }
 
-        $this->loaded = false;
+        $this->_unload();
         return $this;
     }
 
@@ -62,7 +62,7 @@ class LazyList extends \ArrayObject {
         $this->page = $page;
         $this->page_size = $page_size;
 
-        $this->loaded = false;
+        $this->_unload();
         return $this;
     }
 
@@ -74,7 +74,7 @@ class LazyList extends \ArrayObject {
         $union = new self($this->table);
         $union->condition->copy($this->condition)->or($another_lazy_list->condition);
 
-        $union->loaded = false;
+        $union->_unload();
         return $union;
     }
 
@@ -87,17 +87,17 @@ class LazyList extends \ArrayObject {
      * @override ArrayObject
      */
     public function count() {
-        $this->_load();
+        $this->_load(0);
         return parent::count();
     }
 
     /**
      * @override ArrayObject
      */
-    public function getIterator() {
-        $this->_load();
-        return parent::getIterator();
-    }
+    // public function getIterator() {
+    //     $this->_load(0);
+    //     return parent::getIterator();
+    // }
 
     /**
      * @override ArrayObject
@@ -111,7 +111,7 @@ class LazyList extends \ArrayObject {
      * @override ArrayObject
      */
     public function offsetGet($offset) {
-        $this->_load();
+        $this->_load($offset);
         return parent::offsetGet($offset);
     }
 
@@ -120,20 +120,43 @@ class LazyList extends \ArrayObject {
         return parent::getArrayCopy();
     }
 
-    private function _load() {
-        if ($this->loaded) return;
+    private function _load($index = PHP_INT_SIZE) {
+        $PAGE = 2;
+
+        $inner_page_size = $this->page_size ? min($PAGE, $this->page_size) : $PAGE;
+        $inner_max = $this->loaded * $inner_page_size;
+        $max = $this->page_size ? $this->page * $this->page_size : PHP_INT_SIZE;
+
+        if ($inner_max > $index) return;
+        if ($inner_max >= $max) return;
 
         $table = $this->table;
-
         $result = $table::_find(
             $this->condition,
             $this->orders,
-            $this->page,
-            $this->page_size
+            $this->loaded + 1,
+            $inner_page_size
         );
 
-        $this->loaded = true;
-        $this->exchangeArray($result);
+        if (!$result) {
+            return;
+        }
+
+        $overflow = $inner_max + $inner_page_size - $max;
+        $result = array_slice($result, 0, ($inner_page_size - $overflow));
+
+        $this->loaded += 1;
+        $this->exchangeArray(array_merge(parent::getArrayCopy(), $result));
+
+        if (count($result) >= $inner_page_size) {
+            // load next page
+            $this->_load($index);
+        }
+    }
+
+    private function _unload() {
+        $this->loaded = false;
+        $this->exchangeArray(array());
     }
 
     public function __call($func, $args) {
@@ -143,8 +166,10 @@ class LazyList extends \ArrayObject {
             case 'or':
                 return call_user_func(array($this, 'oor'), $args);
             default:
+                // @codeCoverageIgnoreStart
                 trigger_error("Call to undefined method " . __CLASS__ . "::$func()", E_USER_ERROR);
                 die;
+                // @codeCoverageIgnoreEnd
         }
     }
 }

@@ -18,23 +18,23 @@ class YapoTest extends PHPUnit_Framework_TestCase {
 
     public function test_deep_query() {
 
-        // SELECT `id` FROM `company` WHERE `ceo_id` IN (SELECT `id` FROM `employee` WHERE `born` > '1972')
-        $companies_ceo_born_after_1972 = Company::filter(
-            Company::_('ceo')->_('born')->gt(1972)
+        // SELECT `id` FROM `company` WHERE `ceo_id` IN (SELECT `id` FROM `employee` WHERE `born` <= '1972')
+        $companies_ceo_born_before_1972 = Company::filter(
+            Company::_('ceo')->_('born')->lte(1972)
         );
         $this->assertEquals(
-            pluck($companies_ceo_born_after_1972->getArrayCopy(), 'name'),
-            array(0 => 'Google', 1 => 'Facebook')
+            pluck($companies_ceo_born_before_1972->getArrayCopy(), 'name'),
+            array(0 => 'Apple', 1 => 'Microsoft')
         );
 
 
-        // SELECT `id` FROM `company` WHERE (`ceo_id` IN (SELECT `id` FROM `employee` WHERE `born` > '1972') and `name` = 'Google')
-        $companies_ceo_born_after_1972_and_name_google = Company::filter(
-            Company::_('ceo')->_('born')->gt(1972),
-            Company::_('name')->eq('Google')
+        // SELECT `id` FROM `company` WHERE (`ceo_id` IN (SELECT `id` FROM `employee` WHERE `born` <= '1972') and `name` != 'Apple')
+        $companies_ceo_born_before_1972_and_name_not_apple = Company::filter(
+            Company::_('ceo')->_('born')->lte(1972),
+            Company::_('name')->neq('Apple')
         );
-        $this->assertEquals($companies_ceo_born_after_1972_and_name_google->count(), 1);
-        $this->assertEquals($companies_ceo_born_after_1972_and_name_google[0]->name, 'Google');
+        $this->assertEquals($companies_ceo_born_before_1972_and_name_not_apple->count(), 1);
+        $this->assertEquals($companies_ceo_born_before_1972_and_name_not_apple[0]->name, 'Microsoft');
 
 
         // SELECT `id` FROM `company` WHERE `ceo_id` IN (SELECT `id` FROM `employee` WHERE `company_id` IN (SELECT `id` FROM `company` WHERE `founded` < '1998')) 
@@ -158,6 +158,18 @@ class YapoTest extends PHPUnit_Framework_TestCase {
         // filter 'and', WHERE name like "%le" AND founded >= "1980"
         $companies_name_like_le_and_founded_gt_1980 = Company::filter(
             $_('name')->like('%le'),
+            $_('founded')->gt('1980')
+        );
+        $this->assertEquals(
+            pluck($companies_name_like_le_and_founded_gt_1980->getArrayCopy(), 'name'),
+            array(0 => 'Google')
+        );
+
+
+        // filter 'and', WHERE name like "%le" AND founded >= "1980"
+        $companies_name_like_le_and_founded_gt_1980 = Company::filter(
+            $_('name')->like('%le')
+        )->and(
             $_('founded')->gt('1980')
         );
         $this->assertEquals(

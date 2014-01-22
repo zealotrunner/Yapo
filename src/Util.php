@@ -2,6 +2,9 @@
 
 namespace Yapo;
 
+/**
+ * @codeCoverageIgnore
+ */
 function debug($var) {
     if (!defined("DEBUG_MODE")) return;
 
