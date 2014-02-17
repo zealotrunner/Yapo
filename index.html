@@ -1,42 +1,42 @@
 <!DOCTYPE html>
 <html>
-
   <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Yapo : Yet Another PHP ORM" />
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
 
-    <title>Yapo</title>
+    <title>Yapo by zealotrunner</title>
   </head>
 
   <body>
+    <header>
+      <div class="inner">
+        <h1>Yapo</h1>
+        <h2>Yet Another PHP ORM</h2>
+        <a href="https://github.com/zealotrunner/Yapo" class="button"><small>View project on</small>GitHub</a>
+      </div>
+    </header>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/zealotrunner/Yapo">View on GitHub</a>
-
-          <h1 id="project_title">Yapo</h1>
-          <h2 id="project_tagline">Yet Another PHP ORM</h2>
-
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/zealotrunner/Yapo/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/zealotrunner/Yapo/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h1>
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
 <a name="yapo" class="anchor" href="#yapo"><span class="octicon octicon-link"></span></a>Yapo</h1>
 
 <p>Yet Another PHP ORM</p>
 
-<p><a href="https://travis-ci.org/zealotrunner/Yapo"><img src="https://travis-ci.org/zealotrunner/Yapo.png?branch=master" alt="Build Status"></a></p>
+<p><a href="https://packagist.org/packages/yapo/yapo"><img src="https://poser.pugx.org/yapo/yapo/v/stable.png" alt="Latest Stable Version"></a>
+<a href="https://travis-ci.org/zealotrunner/Yapo"><img src="https://travis-ci.org/zealotrunner/Yapo.png?branch=master" alt="Build Status"></a>
+<a href="https://coveralls.io/r/zealotrunner/Yapo"><img src="https://coveralls.io/repos/zealotrunner/Yapo/badge.png" alt="Coverage Status"></a>
+<a href="https://packagist.org/packages/yapo/yapo"><img src="https://poser.pugx.org/yapo/yapo/license.png" alt="License"></a></p>
 
 <h2>
 <a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
@@ -98,8 +98,8 @@
         <span class="nv">$define</span><span class="p">(</span><span class="s1">'employees'</span><span class="p">)</span>        <span class="o">-&gt;</span><span class="na">as</span><span class="p">(</span><span class="s1">'Employee'</span><span class="p">)</span>
                                     <span class="o">-&gt;</span><span class="na">with</span><span class="p">(</span><span class="s1">'company'</span><span class="p">);</span>
 
-        <span class="nv">$define</span><span class="p">(</span><span class="s1">'brief'</span><span class="p">)</span>            <span class="o">-&gt;</span><span class="na">as</span><span class="p">(</span><span class="k">function</span><span class="p">(</span><span class="nv">$c_row</span><span class="p">)</span> <span class="p">{</span>
-                                        <span class="k">return</span> <span class="s2">"</span><span class="si">{</span><span class="nv">$c_row</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span><span class="si">}</span><span class="s2">, founded in </span><span class="si">{</span><span class="nv">$c_row</span><span class="p">[</span><span class="s1">'founded'</span><span class="p">]</span><span class="si">}</span><span class="s2">."</span><span class="p">;</span>
+        <span class="nv">$define</span><span class="p">(</span><span class="s1">'brief'</span><span class="p">)</span>            <span class="o">-&gt;</span><span class="na">as</span><span class="p">(</span><span class="k">function</span><span class="p">(</span><span class="nv">$row</span><span class="p">)</span> <span class="p">{</span>
+                                        <span class="k">return</span> <span class="s2">"</span><span class="si">{</span><span class="nv">$row</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span><span class="si">}</span><span class="s2">, founded in </span><span class="si">{</span><span class="nv">$row</span><span class="p">[</span><span class="s1">'founded'</span><span class="p">]</span><span class="si">}</span><span class="s2">."</span><span class="p">;</span>
                                     <span class="p">});</span> <span class="c1">// -&gt;of('CompanyTable');</span>
 
         <span class="nv">$define</span><span class="p">(</span><span class="s1">'special'</span><span class="p">)</span>          <span class="o">-&gt;</span><span class="na">as</span><span class="p">(</span><span class="s1">'special'</span><span class="p">)</span><span class="o">-&gt;</span><span class="na">switch</span><span class="p">(</span><span class="k">array</span><span class="p">(</span>
@@ -212,7 +212,65 @@
 
 </pre></div>
 
-<h2>
+<hr><ol>
+<li>
+<p>local fields</p>
+
+<pre><code>$define('symbol')       -&gt;as('n_symbol');
+
+    Company
+---------------
+|             |
+|  *n_symbol* |
+|             |
+---------------
+</code></pre>
+</li>
+<li>
+<p>another model as a field</p>
+
+<pre><code>//
+$define('ceo')          -&gt;as('Employee')
+                        -&gt;using('ceo_id');
+
+    Company           *Employee*
+---------------     --------------
+|             |     |            |
+|    ceo_id   | - &gt; |            |
+|             |     |            |
+---------------     --------------
+
+//
+$define('employees')    -&gt;as('Employee')
+                        -&gt;with('company');
+
+    Company           *Employee*
+---------------     --------------
+|             |     |            |
+|             | &lt; - |  company   |
+|             |     |            |
+---------------     --------------
+</code></pre>
+</li>
+<li>
+<p>another column as a field</p>
+
+<pre><code>//
+$define('description')  -&gt;as('description')
+                        -&gt;of('CompanyDetailTable')
+                        -&gt;using('id');
+
+   Company           CompanyDetailTable
+---------------     -------------------
+|             |     |                 |
+|     id      | - &gt; |  *description*  |
+|             |     |                 |
+---------------     -------------------
+
+// ...
+</code></pre>
+</li>
+</ol><h2>
 <a name="test" class="anchor" href="#test"><span class="octicon octicon-link"></span></a>Test</h2>
 
 <p>Install <a href="https://github.com/composer/composer">Composer</a></p>
@@ -220,6 +278,7 @@
 <pre lang="shell"><code>cd yapo
 curl -sS https://getcomposer.org/installer | php
 php composer.phar install --dev
+php composer.phar dumpautoload -o
 </code></pre>
 
 <p>Prepare for testing</p>
@@ -231,18 +290,25 @@ php composer.phar install --dev
 
 <pre lang="shell"><code>./vendor/bin/phpunit tests/YapoTest.php
 </code></pre>
-      </section>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/zealotrunner/Yapo/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/zealotrunner/Yapo/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/zealotrunner/Yapo"></a> is maintained by <a href="https://github.com/zealotrunner">zealotrunner</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
     </div>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Yapo maintained by <a href="https://github.com/zealotrunner">zealotrunner</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </footer>
-    </div>
-
-    
-
+  
   </body>
 </html>
