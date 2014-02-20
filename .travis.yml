@@ -10,13 +10,9 @@ env:
   - DB=sqlite
   - DB=mysql
 
-branches:
-  only:
-    - master
-
 install:
   - curl -sS https://getcomposer.org/installer | php
-  - php composer.phar install --dev --no-interaction
+  - php composer.phar install --prefer-dist --optimize-autoloader --dev --no-interaction
 
 before_script:
   - ./tests/generate_test_sqlite
@@ -24,7 +20,7 @@ before_script:
   - mysql -u travis yapo_test < 'tests/test.dump'
   - mkdir -p build/logs
 
-script: 
+script:
   - ./vendor/bin/phpunit --coverage-clover build/logs/clover.xml tests/YapoTest.php
 
 after_script:

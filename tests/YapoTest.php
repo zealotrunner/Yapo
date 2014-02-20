@@ -16,42 +16,11 @@ class YapoTest extends PHPUnit_Framework_TestCase {
         self::clean();
     }
 
-    public function test_deep_query() {
-
-        // SELECT `id` FROM `company` WHERE `ceo_id` IN (SELECT `id` FROM `employee` WHERE `born` <= '1972')
-        $companies_ceo_born_before_1972 = Company::filter(
-            Company::_('ceo')->_('born')->lte(1972)
-        );
-        $this->assertEquals(
-            pluck($companies_ceo_born_before_1972->getArrayCopy(), 'name'),
-            array(0 => 'Apple', 1 => 'Microsoft')
-        );
-
-
-        // SELECT `id` FROM `company` WHERE (`ceo_id` IN (SELECT `id` FROM `employee` WHERE `born` <= '1972') and `name` != 'Apple')
-        $companies_ceo_born_before_1972_and_name_not_apple = Company::filter(
-            Company::_('ceo')->_('born')->lte(1972),
-            Company::_('name')->neq('Apple')
-        );
-        $this->assertEquals($companies_ceo_born_before_1972_and_name_not_apple->count(), 1);
-        $this->assertEquals($companies_ceo_born_before_1972_and_name_not_apple[0]->name, 'Microsoft');
-
-
-        // SELECT `id` FROM `company` WHERE `ceo_id` IN (SELECT `id` FROM `employee` WHERE `company_id` IN (SELECT `id` FROM `company` WHERE `founded` < '1998')) 
-        $companies_founded_before_1998 = Company::filter(
-            Company::_('ceo')->_('company')->_('founded')->lt(1998)
-        );
-        $this->assertEquals(
-            pluck($companies_founded_before_1998->getArrayCopy(), 'name'),
-            array(0 => 'Apple', 1 => 'Microsoft')
-        );
-
-    }
-
 
     public function test_get() {
         // get by id
         $company_id_10 = Company::get(10);
+
         $this->assertEquals(
             $company_id_10->id, 10
         );
@@ -244,6 +213,37 @@ class YapoTest extends PHPUnit_Framework_TestCase {
 
     }
 
+    public function test_deep_query() {
+        // SELECT `id` FROM `company` WHERE `ceo_id` IN (SELECT `id` FROM `employee` WHERE `born` <= '1972')
+        $companies_ceo_born_before_1972 = Company::filter(
+            Company::_('ceo')->_('born')->lte(1972)
+        );
+        $this->assertEquals(
+            pluck($companies_ceo_born_before_1972->getArrayCopy(), 'name'),
+            array(0 => 'Apple', 1 => 'Microsoft')
+        );
+
+
+        // SELECT `id` FROM `company` WHERE (`ceo_id` IN (SELECT `id` FROM `employee` WHERE `born` <= '1972') and `name` != 'Apple')
+        $companies_ceo_born_before_1972_and_name_not_apple = Company::filter(
+            Company::_('ceo')->_('born')->lte(1972),
+            Company::_('name')->neq('Apple')
+        );
+        $this->assertEquals($companies_ceo_born_before_1972_and_name_not_apple->count(), 1);
+        $this->assertEquals($companies_ceo_born_before_1972_and_name_not_apple[0]->name, 'Microsoft');
+
+
+        // SELECT `id` FROM `company` WHERE `ceo_id` IN (SELECT `id` FROM `employee` WHERE `company_id` IN (SELECT `id` FROM `company` WHERE `founded` < '1998')) 
+        $companies_founded_before_1998 = Company::filter(
+            Company::_('ceo')->_('company')->_('founded')->lt(1998)
+        );
+        $this->assertEquals(
+            pluck($companies_founded_before_1998->getArrayCopy(), 'name'),
+            array(0 => 'Apple', 1 => 'Microsoft')
+        );
+
+    }
+
     public function test_save() {
         // create
         $yapo_company = new Company(array(
@@ -392,6 +392,8 @@ class YapoTest extends PHPUnit_Framework_TestCase {
 
         // remove inserted company
         $succeed = $yapo_company->remove();
+        $this->assertTrue($succeed);
+        $succeed = $special_company->remove();
         $this->assertTrue($succeed);
     }
 

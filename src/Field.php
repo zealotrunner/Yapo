@@ -85,8 +85,8 @@ abstract class Field {
         return isset($this->attributes[$name]) ? $this->attributes[$name] : null;
     }
 
-    public function eva($row, $sibling_rows) {
-        return $this->decorated($this->_eva($row, $sibling_rows));
+    public function eva($row) {
+        return $this->decorated($this->_eva($row));
     }
 
     private function decorated($something) {
@@ -100,7 +100,7 @@ abstract class Field {
     }
 
 
-    protected abstract function _eva($row, $sibling_rows);
+    protected abstract function _eva($row);
 
     public abstract function modifications($id, $value);
 
@@ -125,7 +125,7 @@ class FieldSimple extends Field {
         return array($table, $where, $modification);
     }
 
-    protected function _eva($row, $sibling_rows) {
+    protected function _eva($row) {
         return $row;
     }
 
@@ -135,25 +135,13 @@ class FieldSimple extends Field {
 
 class FieldToOne extends Field {
 
-    protected function _eva($row, $sibling_rows) {
+    protected function _eva($row) {
         $PAGE = 30;
         $column = $this->column;
 
         $other_model = $this->opposite_model;
 
-        if ($sibling_rows) {
-            $values = every($PAGE, $sibling_rows, function($rows) use ($column, $other_model) {
-                $ids = array_map(function($r) use ($column) {
-                        return $r[$column];
-                    }, $rows);
-                return $other_model::get($ids);
-            });
-            $value = empty($values[$row[$column]]) ? '' : $values[$row[$column]];
-        } else {
-            $value = $other_model::get($row[$column]);
-        }
-
-        return $value;
+        return $other_model::get($row[$column]);
     }
 
     public function modifications($id, $value) {
@@ -178,27 +166,15 @@ class FieldToOne extends Field {
 
 class FieldToOneColumn extends Field {
 
-    protected function _eva($row, $sibling_rows) {
+    protected function _eva($row) {
         $PAGE = 30;
         $column = $this->column;
 
         $of_table_name = $this->opposite_table;
         $of_table = $of_table_name::instance();
-        if ($sibling_rows) {
-            $values = every($PAGE, $sibling_rows, function($rows) use ($column, $of_table, $PAGE) {
-                $ids = array_map(function($r) use ($column) {
-                    return $r[$column];
-                }, $rows);
 
-                return $of_table->select('*', Condition::i($of_table->pk(), 'IN', $ids)->sql(), $of_table->pk() . ' DESC', 0, $PAGE);
-            });
-
-            $value = $values[$row[$column]];
-        } else {
-            $value = $of_table->select('*', Condition::i($of_table->pk(), 'IN', $row[$column])->sql(), $of_table->pk() . ' DESC', 0, 0);
-        }
-
-        return $value;
+        $os = $of_table->select('*', Condition::i($of_table->pk(), '=', $row[$column])->sql(), $of_table->pk() . ' DESC', 0, 1);
+        return array_pop($os);
     }
 
     public function modifications($id, $value) {
@@ -223,7 +199,7 @@ class FieldToOneColumn extends Field {
 
 class FieldToMany extends Field {
 
-    protected function _eva($row, $sibling_rows) {
+    protected function _eva($row) {
         $PAGE = 30;
         $this_model_name = $this->model();
         $this_table_name = $this_model_name::table();
@@ -232,27 +208,9 @@ class FieldToMany extends Field {
         $other_model = $this->opposite_model;
         $other_field = $this->opposite_field;
 
-        if ($sibling_rows) {
-            $values = every($PAGE, $sibling_rows, function($rows) use ($other_model, $pk, $other_field) {
-                $ids = array_map(function($r) use ($pk) {
-                    return $r[$pk];
-                }, $rows);
-
-                return $other_model::filter(
-                    $other_model::_($other_field)->in($ids)
-                );
-            });
-
-            $value = $other_model::filter(
-                $other_model::_($other_field)->eq($row[$pk])
-            );
-        } else {
-            $value = $other_model::filter(
-                $other_model::_($other_field)->eq($row[$pk])
-            );
-        }
-
-        return $value;
+        return $other_model::filter(
+            $other_model::_($other_field)->eq($row[$pk])
+        );
     }
 
     /**
@@ -268,7 +226,7 @@ class FieldToMany extends Field {
 
 class FieldToManyColumn extends Field {
 
-    protected function _eva($row, $sibling_rows) {
+    protected function _eva($row) {
         // not yet implemented
     }
 

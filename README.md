@@ -19,7 +19,7 @@ $_ = Company::_();
 $company = Company::get(10);        // SELECT * FROM `company` WHERE `id` = 10
 
 
-$companies = Company::filter(       // SELECT * FROM `company`
+$companies = Company::filter(       // SELECT id FROM `company`
     $_('name')->like('%oo%'),       // WHERE ( `name` LIKE '%oo%'
     $_('is_public')->eq(true)       // AND `is_pubilc` = 1 )
 )->or(
@@ -29,7 +29,7 @@ $companies = Company::filter(       // SELECT * FROM `company`
 
 foreach ($companies as $company) {
     echo $company->name;
-    echo $company->ceo->name;       // SELECT * FROM `employee` WHERE 
+    echo $company->ceo->name;       // SELECT * FROM `employee` WHERE
                                     // `id` = {$company->ceo}
     echo $company->ceo->sex->text();
 }
@@ -38,7 +38,7 @@ foreach ($companies as $company) {
 $companies_ceo_born_after_1972 = Company::filter(
     $_('ceo')->_('born')->gt(1972)
 
-    // SELECT `id` FROM `company` WHERE ( `ceo_id` 
+    // SELECT `id` FROM `company` WHERE ( `ceo_id`
     //     IN (SELECT `id` FROM `employee` WHERE `born` > '1972'))
 );
 

@@ -14,21 +14,16 @@ abstract class Yapo {
      */
     public $data = array();
 
+    private $row;
+
     /**
      * updating data
      */
     private $dirty_data = array();
 
-    /*
-     * Bundle
-     */
-    public $siblings = null;
-
     public function __construct($data = array()) {
         $this->data = $data;
         $this->dirty_data = $data;
-
-        $this->siblings = new Bundle(self::_table());
     }
 
     /**
@@ -158,7 +153,7 @@ abstract class Yapo {
         $result = false;
 
         // analyze the dirty_data, get the modications
-        $modifications = self::_modifications($this->id, $this->dirty_data);
+        $modifications = self::_modifications(isset($this->data['id']) ? $this->data['id'] : 0, $this->dirty_data);
 
         $last_insert_id = 0;
 
@@ -300,21 +295,24 @@ abstract class Yapo {
     }
 
     private static function _modelize_and_fill_up($ids) {
-        $rows = static::_table()->select(
-            '*',
-            Condition::i(static::_table()->pk(), 'IN', $ids)->sql(),
-            '',
-            0,
-            count($ids)
-        );
+        $rows = array();
+        foreach ($ids as $id) {
+            $rs = static::_table()->select(
+                '*',
+                Condition::i(static::_table()->pk(), '=', $id)->sql(),
+                '',
+                0,
+                1
+            );
+            $rows = $rows + $rs;
+        }
 
-        $bundle = new Bundle(static::_table());
         $modelizeds = array();
         foreach ($ids as $id) {
             if (empty($rows[$id])) continue;
 
             $class = static::real_class($rows[$id]);
-            $modelized = self::_modelize($id, $class, $bundle);
+            $modelized = self::_modelize($id, $class);
             $modelizeds[] = $modelized;
         }
 
@@ -341,14 +339,8 @@ abstract class Yapo {
         return self::_class();
     }
 
-    private static function _modelize($id, $class, $bundle = null) {
+    private static function _modelize($id, $class) {
         $object = static::_wrap(array('id' => $id), $class);
-
-        if ($bundle) {
-            $object->siblings = $bundle;
-        }
-
-        $object->siblings->add($object);
 
         return $object;
     }
@@ -407,8 +399,11 @@ abstract class Yapo {
         // fill a field only once
         if ($field && isset($this->data[$field])) return $this;
 
-        $this->siblings->fetch();
-        $this->siblings->fill_fields($field);
+        $table = static::_table();
+        $rows = $table->select('*', Condition::i($table->pk(), '=', $this->data['id'])->sql(), '', 0, 1);
+        $this->row = array_pop($rows);
+
+        $this->_eva($field, $this->row);
 
         // todo
         // only id
@@ -417,18 +412,16 @@ abstract class Yapo {
         return $this;
     }
 
-    public function _eva($field, $row, $rows) {
-         foreach (self::fields() as $f) {
-            // fill all simple fields in all siblings
+    private function _eva($field, $row) {
+        foreach (self::fields() as $f) {
             if ($field || $f->simple()) {
-                $this->data[$f->name()] = $f->eva($row, $rows);
+                $this->data[$f->name()] = $f->eva($row);
             }
         }
     }
 
     private function _clean_up() {
         $this->dirty_data = array();
-        $this->siblings->_clean_up();
     }
 
     /*abstract*/ protected static function define_fields($define_function) {}
