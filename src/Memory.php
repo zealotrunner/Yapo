@@ -42,7 +42,6 @@ class Memory {
 
     public function truncate() {
         $this->inc();
-        // $this->data[$this->space] = array();
     }
 
     private function inc() {

@@ -136,9 +136,7 @@ class FieldSimple extends Field {
 class FieldToOne extends Field {
 
     protected function _eva($row) {
-        $PAGE = 30;
         $column = $this->column;
-
         $other_model = $this->opposite_model;
 
         return $other_model::get($row[$column]);
@@ -167,14 +165,16 @@ class FieldToOne extends Field {
 class FieldToOneColumn extends Field {
 
     protected function _eva($row) {
-        $PAGE = 30;
         $column = $this->column;
 
         $of_table_name = $this->opposite_table;
         $of_table = $of_table_name::instance();
 
-        $os = $of_table->select('*', Condition::i($of_table->pk(), '=', $row[$column])->sql(), $of_table->pk() . ' DESC', 0, 1);
-        return array_pop($os);
+        return array_pop($of_table->select(
+            '*',
+            Condition::i($of_table->pk(), '=', $row[$column])->sql(),
+            $of_table->pk() . ' DESC',
+            0, 1));
     }
 
     public function modifications($id, $value) {
@@ -200,7 +200,6 @@ class FieldToOneColumn extends Field {
 class FieldToMany extends Field {
 
     protected function _eva($row) {
-        $PAGE = 30;
         $this_model_name = $this->model();
         $this_table_name = $this_model_name::table();
         $pk = $this_table_name::instance()->pk();

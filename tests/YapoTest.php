@@ -401,6 +401,9 @@ class YapoTest extends PHPUnit_Framework_TestCase {
         foreach (Company::filter(Company::_('id')->gt(13)) as $c) {
             $c->remove();
         }
+        // todo, merge into remove
+        $t = new CompanyTable();
+        $t->delete('id > 13');
 
         // todo, merge into remove
         $t = new CompanyDetailTable();

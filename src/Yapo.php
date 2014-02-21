@@ -141,7 +141,6 @@ abstract class Yapo {
     }
 
     public static function count($condition) {
-        // todo refine
         return self::_table()->count('*', $condition->sql());
     }
 
@@ -210,14 +209,13 @@ abstract class Yapo {
         // let the subclass overwrite
         if ($logically) return false;
 
-        // $result = static::_table()->delete($where = '`' . static::_table()->pk() . '` = ' . $this->data['id']);
         $result = static::_table()->delete(
             Condition::i(static::_table()->pk(), '=', $this->data['id'])->sql()
         );
 
         if ($result) {
             // clear memory cache after removing
-            Memory::s(self::_class())->truncate();
+            Memory::s(self::_class())->delete($this->data['id']);
 
             // todo
             // remove extend tables
@@ -400,24 +398,18 @@ abstract class Yapo {
         if ($field && isset($this->data[$field])) return $this;
 
         $table = static::_table();
-        $rows = $table->select('*', Condition::i($table->pk(), '=', $this->data['id'])->sql(), '', 0, 1);
-        $this->row = array_pop($rows);
+        $this->row = array_pop($table->select('*', Condition::i($table->pk(), '=', $this->data['id'])->sql(), '', 0, 1));
 
-        $this->_eva($field, $this->row);
+        foreach (self::fields() as $f) {
+            if ($field || $f->simple()) {
+                $this->data[$f->name()] = $f->eva($this->row);
+            }
+        }
 
-        // todo
         // only id
         if (count($this->data) == 1) return null;
 
         return $this;
-    }
-
-    private function _eva($field, $row) {
-        foreach (self::fields() as $f) {
-            if ($field || $f->simple()) {
-                $this->data[$f->name()] = $f->eva($row);
-            }
-        }
     }
 
     private function _clean_up() {

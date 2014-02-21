@@ -21,22 +21,22 @@ function debug($var) {
     echo $suffix;
 }
 
-function every($page, $data, $func) {
-    $result = array();
-    for ($i = 0; $i < count($data); $i += $page) {
-        $x = call_user_func($func, array_slice($data, $i, $page, true));
-        if ($x instanceof LazyList) {
-            $result =
-                $result
-                    ? $result->union($x)
-                    : $x->union();
-        } else {
-            $result += $x; // array_merge, preverve key
-        }
-    }
+// function every($page, $data, $func) {
+//     $result = array();
+//     for ($i = 0; $i < count($data); $i += $page) {
+//         $x = call_user_func($func, array_slice($data, $i, $page, true));
+//         if ($x instanceof LazyList) {
+//             $result =
+//                 $result
+//                     ? $result->union($x)
+//                     : $x->union();
+//         } else {
+//             $result += $x; // array_merge, preverve key
+//         }
+//     }
 
-    return $result;
-}
+//     return $result;
+// }
 
 function compose($f, $g) {
   return function() use($f,$g) {
