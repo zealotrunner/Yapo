@@ -104,4 +104,5 @@ abstract class Table implements InterfaceTable {
         // todo
     }
 
+    // abstract public static function master();
 }

@@ -12,16 +12,16 @@ class Memory {
 
     private $version;
 
-    private function __construct($space = 'default') {
-        $this->space = $space;
-    }
-
     public static function s($space) {
         if (empty(self::$instances[$space])) {
             self::$instances[$space] = new self($space);
         }
 
         return self::$instances[$space];
+    }
+
+    private function __construct($space = 'default') {
+        $this->space = $space;
     }
 
     public function get($key) {

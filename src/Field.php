@@ -170,11 +170,13 @@ class FieldToOneColumn extends Field {
         $of_table_name = $this->opposite_table;
         $of_table = $of_table_name::instance();
 
-        return array_pop($of_table->select(
+        $rows = $of_table->select(
             '*',
             Condition::i($of_table->pk(), '=', $row[$column])->sql(),
             $of_table->pk() . ' DESC',
-            0, 1));
+            0, 1);
+
+        return array_pop($rows);
     }
 
     public function modifications($id, $value) {

@@ -62,57 +62,59 @@ class SpecialCompany extends Company {
 class CompanyTable extends Yapo\CachedTable {
 
     public static function master() {
-        return new Yapo\Config(
-            $dsn      = TEST_DSN,
-            $user     = TEST_USER,
-            $password = TEST_PASS,
-            $table    = 'company',
-            $pk       = 'id'
-        );
+        return new Yapo\Config(array(
+            'dsn'      => TEST_DSN,
+            'user'     => TEST_USER,
+            'password' => TEST_PASS,
+            'table'    => 'company',
+            'pk'       => 'id'
+        ));
+    }
+    
+    public static function memcache() {
+        return new Yapo\Config(array(
+            'host' => TEST_MEMCACHE_HOST,
+            'port' => TEST_MEMCACHE_PORT
+        ));
     }
 }
 
 class CompanyDetailTable extends Yapo\CachedTable {
 
     public static function master() {
-        return new Yapo\Config(
-            $dsn      = TEST_DSN,
-            $user     = TEST_USER,
-            $password = TEST_PASS,
-            $table    = 'company_detail',
-            $pk       = 'id'
-        );
+        return new Yapo\Config(array(
+            'dsn'      => TEST_DSN,
+            'user'     => TEST_USER,
+            'password' => TEST_PASS,
+            'table'    => 'company_detail',
+            'pk'       => 'id'
+        ));
+    }
+
+    public static function memcache() {
+        return new Yapo\Config(array(
+            'host' => TEST_MEMCACHE_HOST,
+            'port' => TEST_MEMCACHE_PORT
+        ));
     }
 }
 
 class SpecialCompanyTable extends Yapo\CachedTable {
 
     public static function master() {
-        return new Yapo\Config(
-            $dsn      = TEST_DSN,
-            $user     = TEST_USER,
-            $password = TEST_PASS,
-            $table    = 'special_company',
-            $pk       = 'id'
-        );
+        return new Yapo\Config(array(
+            'dsn'      => TEST_DSN,
+            'user'     => TEST_USER,
+            'password' => TEST_PASS,
+            'table'    => 'special_company',
+            'pk'       => 'id'
+        ));
+    }
+
+    public static function memcache() {
+        return new Yapo\Config(array(
+            'host' => TEST_MEMCACHE_HOST,
+            'port' => TEST_MEMCACHE_PORT
+        ));
     }
 }
-
-// class CompanyQueryTable extends Yapo\CachedTable {
-
-//     public static function master() {
-//         return new Yapo\Config(
-//             $dsn      = TEST_DSN,
-//             $user     = TEST_USER,
-//             $password = TEST_PASS,
-//             $table    = 'special_company',
-//             $pk       = 'id'
-//         );
-//     }
-
-//     public static function sync($sync) {
-
-//         $sync('company_name')   ->from('name')->of('CompanyTable');
-
-//     }
-// }

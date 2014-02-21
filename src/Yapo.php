@@ -398,7 +398,8 @@ abstract class Yapo {
         if ($field && isset($this->data[$field])) return $this;
 
         $table = static::_table();
-        $this->row = array_pop($table->select('*', Condition::i($table->pk(), '=', $this->data['id'])->sql(), '', 0, 1));
+        $rows = $table->select('*', Condition::i($table->pk(), '=', $this->data['id'])->sql(), '', 0, 1);
+        $this->row = array_pop($rows);
 
         foreach (self::fields() as $f) {
             if ($field || $f->simple()) {

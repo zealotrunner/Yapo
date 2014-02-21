@@ -10,6 +10,9 @@ env:
   - DB=sqlite
   - DB=mysql
 
+services:
+  - memcached
+
 install:
   - curl -sS https://getcomposer.org/installer | php
   - php composer.phar install --prefer-dist --optimize-autoloader --dev --no-interaction
@@ -18,6 +21,7 @@ before_script:
   - ./tests/generate_test_sqlite
   - mysql -e 'create database yapo_test;'
   - mysql -u travis yapo_test < 'tests/test.dump'
+  - phpenv config-add my.php.ini
   - mkdir -p build/logs
 
 script:

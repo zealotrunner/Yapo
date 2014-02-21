@@ -31,22 +31,24 @@ class Employee extends Yapo\Yapo {
 
     }
 
-    // public static function decorate($decorate_with) {
-    //     $decorate_with('YapoCache', new YapoConfig())
-    //             ->then('YapoAnothorCache', new YapoConfig());
-    // }
-
 }
 
 class EmployeeTable extends Yapo\CachedTable {
 
     public static function master() {
-        return new Yapo\Config(
-            $dsn      = TEST_DSN,
-            $user     = TEST_USER,
-            $password = TEST_PASS,
-            $table    = 'employee',
-            $pk       = 'id'
-        );
+        return new Yapo\Config(array(
+            'dsn'      => TEST_DSN,
+            'user'     => TEST_USER,
+            'password' => TEST_PASS,
+            'table'    => 'employee',
+            'pk'       => 'id'
+        ));
+    }
+    
+    public static function memcache() {
+        return new Yapo\Config(array(
+            'host' => TEST_MEMCACHE_HOST,
+            'port' => TEST_MEMCACHE_PORT
+        ));
     }
 }
