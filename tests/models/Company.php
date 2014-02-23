@@ -70,11 +70,19 @@ class CompanyTable extends Yapo\CachedTable {
             'pk'       => 'id'
         ));
     }
-    
-    public static function memcache() {
+
+    public static function cache_servers() {
         return new Yapo\Config(array(
-            'host' => TEST_MEMCACHE_HOST,
-            'port' => TEST_MEMCACHE_PORT
+            array(
+                'host' => TEST_MEMCACHE_HOST,
+                'port' => TEST_MEMCACHE_PORT,
+                'weight' => 50
+            ),
+            array(
+                'host' => TEST_MEMCACHE_HOST,
+                'port' => TEST_MEMCACHE_PORT,
+                'weight' => 50
+            )
         ));
     }
 }
@@ -91,10 +99,16 @@ class CompanyDetailTable extends Yapo\CachedTable {
         ));
     }
 
-    public static function memcache() {
+    public static function cache_servers() {
         return new Yapo\Config(array(
-            'host' => TEST_MEMCACHE_HOST,
-            'port' => TEST_MEMCACHE_PORT
+            array(
+                'host' => TEST_MEMCACHE_HOST,
+                'port' => TEST_MEMCACHE_PORT
+            ),
+            array(
+                'host' => TEST_MEMCACHE_HOST,
+                'port' => TEST_MEMCACHE_PORT
+            )
         ));
     }
 }
@@ -111,10 +125,16 @@ class SpecialCompanyTable extends Yapo\CachedTable {
         ));
     }
 
-    public static function memcache() {
+    public static function cache_servers() {
         return new Yapo\Config(array(
-            'host' => TEST_MEMCACHE_HOST,
-            'port' => TEST_MEMCACHE_PORT
+            array(
+                'host' => TEST_MEMCACHE_HOST,
+                'port' => TEST_MEMCACHE_PORT
+            ),
+            array(
+                'host' => TEST_MEMCACHE_HOST,
+                'port' => TEST_MEMCACHE_PORT
+            )
         ));
     }
 }

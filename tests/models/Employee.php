@@ -44,11 +44,17 @@ class EmployeeTable extends Yapo\CachedTable {
             'pk'       => 'id'
         ));
     }
-    
-    public static function memcache() {
+
+    public static function cache_servers() {
         return new Yapo\Config(array(
-            'host' => TEST_MEMCACHE_HOST,
-            'port' => TEST_MEMCACHE_PORT
+            array(
+                'host' => TEST_MEMCACHE_HOST,
+                'port' => TEST_MEMCACHE_PORT
+            ),
+            array(
+                'host' => TEST_MEMCACHE_HOST,
+                'port' => TEST_MEMCACHE_PORT
+            )
         ));
     }
 }

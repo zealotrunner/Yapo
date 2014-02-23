@@ -4,7 +4,7 @@ namespace Yapo;
 
 abstract class CachedTable extends Table {
 
-    private $memcache_configs;
+    private $memcache_servers;
 
     public function insert($column, $value, $on_duplicate = '') {
         return $this->clean_after('insert', func_get_args());
@@ -31,7 +31,7 @@ abstract class CachedTable extends Table {
     }
 
     private function cached($method, $args = array()) {
-        $key = $args;
+        $key = implode('|', $args);
         if ($cached = $this->cache()->get($key)) return $cached;
 
         $result = call_user_func_array(array('parent', $method), $args);
@@ -41,7 +41,7 @@ abstract class CachedTable extends Table {
     }
 
     private function clean_after($method, $args = array()) {
-        $key = $args;
+        $key = implode('|', $args);
         $result = call_user_func_array(array('parent', $method), $args);
         $this->cache()->truncate();
 
@@ -49,13 +49,15 @@ abstract class CachedTable extends Table {
     }
 
     private function cache() {
-        if (!$this->memcache_configs) {
-            $this->memcache_configs = static::memcache();
+        if (!$this->memcache_servers) {
+            $this->memcache_servers = array_map( function($server) {
+                return array_values($server);
+            }, static::cache_servers()->value());
         }
 
         $space = get_called_class();
-        return Memcached::s($this->memcache_configs->host, $this->memcache_configs->port, $space);
+        return Memcached::s($this->memcache_servers, $space);
     }
 
-    // abstract public static function memcache();
+    // abstract public static function cache_servers();
 }

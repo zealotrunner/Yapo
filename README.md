@@ -9,7 +9,7 @@ Yet Another PHP ORM
 [![License](https://poser.pugx.org/yapo/yapo/license.png)](https://packagist.org/packages/yapo/yapo)
 
 
-Usage
+Query
 -----
 
 ```php
@@ -131,63 +131,26 @@ class Employee extends Yapo\Yapo {
 }
 ```
 
+Table Definition
+----------------
 ```php
 class CompanyTable extends Yapo\YapoTable {
 
     public static function master() {
-        return new Yapo\YapoConfig(
-            $dsn      = TEST_DSN,
-            $user     = TEST_USER,
-            $password = TEST_PASS,
-            $table    = 'company',
-            $pk       = 'id'
-        );
+        return new Yapo\YapoConfig(array(
+            'dsn'      => TEST_DSN,
+            'user'     => TEST_USER,
+            'password' => TEST_PASS,
+            'table'    => 'company',
+            'pk'       => 'id'
+        ));
     }
 }
-
-class CompanyDetailTable extends Yapo\YapoTable {
-
-    public static function master() {
-        return new Yapo\YapoConfig(
-            $dsn      = TEST_DSN,
-            $user     = TEST_USER,
-            $password = TEST_PASS,
-            $table    = 'company_detail',
-            $pk       = 'id'
-        );
-    }
-}
-
-class SpecialCompanyTable extends Yapo\YapoCachedTable {
-
-    public static function master() {
-        return new Yapo\YapoConfig(
-            $dsn      = TEST_DSN,
-            $user     = TEST_USER,
-            $password = TEST_PASS,
-            $table    = 'special_company',
-            $pk       = 'id'
-        );
-    }
-}
-
-class EmployeeTable extends Yapo\YapoTable {
-
-    public static function master() {
-        return new Yapo\YapoConfig(
-            $dsn      = TEST_DSN,
-            $user     = TEST_USER,
-            $password = TEST_PASS,
-            $table    = 'employee',
-            $pk       = 'id'
-        );
-    }
-}
-
 ```
 
 
----
+Fields
+------
 
 1. local fields
 
@@ -238,8 +201,6 @@ class EmployeeTable extends Yapo\YapoTable {
         |             |     |                 |
         ---------------     -------------------
 
-        // ...
-
 Test
 ----
 
@@ -251,7 +212,7 @@ php composer.phar install --dev
 php composer.phar dumpautoload -o
 ```
 
-Prepare for testing
+Prepare testing database
 ```shell
 ./tests/generate_test_sqlite
 ```
