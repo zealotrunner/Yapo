@@ -36,9 +36,12 @@ class Memcached {
         $this->version = $cache->get(self::VERSION_KEY_ . $space) ?: 0;
     }
 
-    public function get($key) {
-        // debug("get from memcache: [$key]");
-        return $this->cache->get($this->key($key));
+    public function get($key, $no_cache_callback = null) {
+        $self = $this;
+        return $this->cache->get($this->key($key), function($memc, $key, &$value) use ($self, $no_cache_callback) {
+            $value = $no_cache_callback($self, $key);
+            return true;
+        });
     }
 
     public function set($key, $value) {
@@ -56,9 +59,12 @@ class Memcached {
     }
 
     private function key($key) {
-        return $this->space . '|' . $this->version . '|' . md5(serialize($key));
-    }
+        $key = $this->space . '|' . $this->version . '|' . md5(serialize($key));
 
+        return strlen($key) > 250
+            ? substr($key, 0, 210) . md5(substr($key, 210))
+            : $key;
+    }
 }
 
 class NoMemcached extends Memcached {
@@ -67,7 +73,9 @@ class NoMemcached extends Memcached {
         // pass
     }
 
-    public function get($key) {return null;}
+    public function get($key, $no_cache_callback = null) {
+        return $no_cache_callback($this, $key);
+    }
 
     public function set($key, $value) {return false;}
 

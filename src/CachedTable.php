@@ -7,42 +7,70 @@ abstract class CachedTable extends Table {
     private $memcache_servers;
 
     public function insert($column, $value, $on_duplicate = '') {
-        return $this->clean_after('insert', func_get_args());
+        return $this->clean_after('insert_', func_get_args());
     }
 
     public function delete($where) {
-        return $this->clean_after('delete', func_get_args());
+        return $this->clean_after('delete_', func_get_args());
     }
 
     public function update($row, $where) {
-        return $this->clean_after('update', func_get_args());
+        return $this->clean_after('update_', func_get_args());
     }
 
     public function select($field, $where, $order, $offset, $limit) {
-        return $this->cached('select', func_get_args());
+        return $this->cached('select_', func_get_args());
     }
 
     public function count($field, $where) {
-        return $this->cached('count', func_get_args());
+        return $this->cached('count_', func_get_args());
     }
 
     public function sql($sql) {
-        return $this->cached('sql', func_get_args());
+        return $this->cached('sql_', func_get_args());
+    }
+
+    public function insert_($column, $value, $on_duplicate = '') {
+        return parent::insert($column, $value, $on_duplicate);
+    }
+
+    public function delete_($where) {
+        return parent::delete($where);
+    }
+
+    public function update_($row, $where) {
+        return parent::update($row, $where);
+    }
+
+    public function select_($field, $where, $order, $offset, $limit) {
+        return parent::select($field, $where, $order, $offset, $limit);
+    }
+
+    public function count_($field, $where) {
+        return parent::count($field, $where);
+    }
+
+    public function sql_($sql) {
+        return parent::sql_($sql);
     }
 
     private function cached($method, $args = array()) {
         $key = implode('|', $args);
-        if ($cached = $this->cache()->get($key)) return $cached;
 
-        $result = call_user_func_array(array('parent', $method), $args);
-        $this->cache()->set($key, $result);
+        $self = $this;
+        $cached = $this->cache()->get($key, function($cache, $key) use ($self, $method, $args) {
+            $result = call_user_func_array(array($self, $method), $args);
+            $cache->set($key, $result);
 
-        return $result;
+            return $result;
+        });
+
+        return $cached;
     }
 
     private function clean_after($method, $args = array()) {
         $key = implode('|', $args);
-        $result = call_user_func_array(array('parent', $method), $args);
+        $result = call_user_func_array(array($this, $method), $args);
         $this->cache()->truncate();
 
         return $result;

@@ -16,11 +16,9 @@ class YapoTest extends PHPUnit_Framework_TestCase {
         self::clean();
     }
 
-
     public function test_get() {
         // get by id
         $company_id_10 = Company::get(10);
-
         $this->assertEquals(
             $company_id_10->id, 10
         );

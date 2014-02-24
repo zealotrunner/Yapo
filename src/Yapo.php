@@ -302,6 +302,7 @@ abstract class Yapo {
                 0,
                 1
             );
+            
             $rows = $rows + $rs;
         }
 
