@@ -3,14 +3,12 @@
     "description": "",
     "version": "0.0.1",
     "type": "library",
-    "homepage": "",
     "keywords": ["orm"],
     "license": "MIT",
     "authors": [
       {
         "name": "Sean Zheng",
-        "email": "zealotrunner@gmail.com",
-        "homepage": ""
+        "email": "zealotrunner@gmail.com"
       }
     ],
     "require": {
