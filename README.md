@@ -6,6 +6,7 @@ Yet Another PHP ORM
 [![Latest Stable Version](https://poser.pugx.org/yapo/yapo/v/stable.png)](https://packagist.org/packages/yapo/yapo)
 [![Build Status](https://travis-ci.org/zealotrunner/Yapo.png?branch=master)](https://travis-ci.org/zealotrunner/Yapo)
 [![Coverage Status](https://coveralls.io/repos/zealotrunner/Yapo/badge.png)](https://coveralls.io/r/zealotrunner/Yapo)
+[![Dependencies Status](https://depending.in/zealotrunner/Yapo.png)](http://depending.in/zealotrunner/Yapo)
 [![License](https://poser.pugx.org/yapo/yapo/license.png)](https://packagist.org/packages/yapo/yapo)
 
 
